@@ -17,6 +17,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { BookCover } from '@/components/shared/BookCover';
+import { GlassToast, type ToastMessage } from '@/components/shared/GlassToast';
 import { canDeleteBooks, formatFileSize } from '@/lib/validation';
 import type { AdminRole, BookWithCategory, Category } from '@/types/library';
 
@@ -39,6 +40,7 @@ export function AdminBooksManager({
   const [busyId, setBusyId] = useState<string | null>(null);
   const [confirmDeleteBook, setConfirmDeleteBook] = useState<BookWithCategory | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [toast, setToast] = useState<ToastMessage | null>(null);
 
   const allowDelete = canDeleteBooks(currentRole);
 
@@ -82,9 +84,19 @@ export function AdminBooksManager({
       setBooks((prev) =>
         prev.map((item) => (item.id === book.id ? { ...item, [field]: nextValue } : item))
       );
+      setToast({
+        id: Date.now(),
+        type: 'success',
+        text:
+          field === 'allow_download'
+            ? `${book.title}: downloads ${nextValue ? 'enabled' : 'disabled'}.`
+            : `${book.title}: ${nextValue ? 'added to' : 'removed from'} Featured Books.`,
+      });
       router.refresh();
     } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : 'Update failed.');
+      const message = err instanceof Error ? err.message : 'Update failed.';
+      setErrorMsg(message);
+      setToast({ id: Date.now(), type: 'error', text: message });
     } finally {
       setBusyId(null);
     }
@@ -106,9 +118,16 @@ export function AdminBooksManager({
       }
       setBooks((prev) => prev.filter((item) => item.id !== target.id));
       setConfirmDeleteBook(null);
+      setToast({
+        id: Date.now(),
+        type: 'success',
+        text: `Deleted "${target.title}" and its cloud files.`,
+      });
       router.refresh();
     } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : 'Delete failed.');
+      const message = err instanceof Error ? err.message : 'Delete failed.';
+      setErrorMsg(message);
+      setToast({ id: Date.now(), type: 'error', text: message });
     } finally {
       setBusyId(null);
     }
@@ -116,10 +135,12 @@ export function AdminBooksManager({
 
   return (
     <div className="space-y-5">
+      <GlassToast toast={toast} onDismiss={() => setToast(null)} />
+
       {errorMsg && (
         <div
           role="alert"
-          className="flex items-start gap-2.5 rounded-2xl border border-rose-400/35 bg-rose-500/15 p-4 text-sm text-rose-200 backdrop-blur-xl"
+          className="flex items-start gap-2.5 rounded-2xl border border-wine-400/45 bg-wine-700/25 p-4 text-sm text-rose-100 backdrop-blur-xl"
         >
           <AlertCircle className="h-5 w-5 text-rose-300 shrink-0 mt-0.5" />
           <span>{errorMsg}</span>
@@ -129,7 +150,7 @@ export function AdminBooksManager({
       {/* Search & Filters */}
       <div className="liquid-glass p-4 grid gap-3 sm:grid-cols-4">
         <div className="relative sm:col-span-2">
-          <Search className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-offwhite-300/75" />
           <input
             type="search"
             value={search}
@@ -166,18 +187,18 @@ export function AdminBooksManager({
       {/* Books Table */}
       {filteredBooks.length === 0 ? (
         <div className="liquid-glass p-12 text-center space-y-3">
-          <BookOpen className="mx-auto h-10 w-10 text-amethyst-300" />
-          <h3 className="font-serif text-lg font-bold text-white">
+          <BookOpen className="mx-auto h-10 w-10 text-champagne-300" />
+          <h3 className="font-serif text-lg font-bold text-offwhite-50">
             {books.length === 0 ? 'No Books Uploaded Yet' : 'No Books Match Your Filter'}
           </h3>
-          <p className="text-sm text-slate-300 max-w-md mx-auto">
+          <p className="text-sm text-offwhite-300 max-w-md mx-auto">
             {books.length === 0
               ? 'Upload your first departmental PDF or EPUB textbook to make it available in the Student Portal.'
               : 'Adjust your search query or filters to view matching books.'}
           </p>
           {books.length === 0 && (
             <Link href="/admin/books/new" className="glass-btn-primary mt-2">
-              <PlusCircle className="h-4 w-4 text-amethyst-300" />
+              <PlusCircle className="h-4 w-4 text-champagne-200" />
               Upload First Book
             </Link>
           )}
@@ -186,7 +207,7 @@ export function AdminBooksManager({
         <div className="liquid-glass overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-white/[0.09] bg-white/[0.03] text-[11px] font-semibold uppercase tracking-wider text-slate-300">
+              <thead className="border-b border-offwhite-100/[0.09] bg-offwhite-100/[0.03] text-[11px] font-semibold uppercase tracking-wider text-champagne-200">
                 <tr>
                   <th className="px-4 py-3.5">Book</th>
                   <th className="px-4 py-3.5">Category &amp; Subject</th>
@@ -196,14 +217,14 @@ export function AdminBooksManager({
                   <th className="px-4 py-3.5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/[0.08]">
+              <tbody className="divide-y divide-offwhite-100/[0.08]">
                 {filteredBooks.map((book) => {
                   const isBusy = busyId === book.id;
                   return (
-                    <tr key={book.id} className="hover:bg-white/[0.04] transition-colors">
+                    <tr key={book.id} className="hover:bg-offwhite-100/[0.04] transition-colors">
                       <td className="px-4 py-3.5">
                         <div className="flex items-center gap-3 min-w-[220px]">
-                          <div className="h-14 w-10 shrink-0 overflow-hidden rounded-lg border border-white/15">
+                          <div className="h-14 w-10 shrink-0 overflow-hidden rounded-lg border border-champagne-300/25">
                             <BookCover
                               title={book.title}
                               author={book.author}
@@ -213,10 +234,10 @@ export function AdminBooksManager({
                             />
                           </div>
                           <div className="min-w-0">
-                            <p className="font-serif font-bold text-white line-clamp-1">
+                            <p className="font-serif font-bold text-offwhite-50 line-clamp-1">
                               {book.title}
                             </p>
-                            <p className="text-xs text-slate-300 line-clamp-1">
+                            <p className="text-xs text-offwhite-300 line-clamp-1">
                               {book.author}
                             </p>
                           </div>
@@ -224,17 +245,17 @@ export function AdminBooksManager({
                       </td>
 
                       <td className="px-4 py-3.5">
-                        <p className="text-xs font-semibold text-white">
+                        <p className="text-xs font-semibold text-offwhite-50">
                           {book.category?.category_name || 'Uncategorized'}
                         </p>
-                        <p className="text-xs text-slate-400">{book.subject}</p>
+                        <p className="text-xs text-offwhite-300/75">{book.subject}</p>
                       </td>
 
                       <td className="px-4 py-3.5">
-                        <span className="inline-flex rounded-full border border-white/20 bg-white/[0.08] px-2.5 py-0.5 font-mono text-[10px] font-semibold uppercase text-blue-200">
+                        <span className="inline-flex rounded-full border border-champagne-300/30 bg-offwhite-100/[0.08] px-2.5 py-0.5 font-mono text-[10px] font-semibold uppercase text-champagne-200">
                           {book.file_type}
                         </span>
-                        <p className="mt-1 font-mono text-[11px] text-slate-400">
+                        <p className="mt-1 font-mono text-[11px] text-offwhite-300/75">
                           {formatFileSize(book.file_size)}
                         </p>
                       </td>
@@ -244,20 +265,20 @@ export function AdminBooksManager({
                           type="button"
                           disabled={isBusy}
                           onClick={() => togglePermission(book, 'allow_download')}
-                          className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold backdrop-blur-xl transition-all ${
+                          className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold backdrop-blur-xl transition-all hover:scale-[1.03] active:scale-[0.97] ${
                             book.allow_download
-                              ? 'border-emerald-400/35 bg-emerald-500/20 text-emerald-200 hover:bg-emerald-500/30'
-                              : 'border-rose-400/35 bg-burgundy-800/35 text-rose-200 hover:bg-burgundy-700/45'
+                              ? 'border-champagne-300/40 bg-champagne-400/20 text-champagne-100 hover:bg-champagne-400/30'
+                              : 'border-wine-400/40 bg-wine-700/25 text-rose-200 hover:bg-wine-600/35'
                           }`}
                         >
                           {book.allow_download ? (
                             <>
-                              <Download className="h-3 w-3" />
+                              <Download className="h-3 w-3 text-champagne-300" />
                               Allowed
                             </>
                           ) : (
                             <>
-                              <Lock className="h-3 w-3" />
+                              <Lock className="h-3 w-3 text-rose-300" />
                               Read Only
                             </>
                           )}
@@ -269,10 +290,10 @@ export function AdminBooksManager({
                           type="button"
                           disabled={isBusy}
                           onClick={() => togglePermission(book, 'is_featured')}
-                          className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold backdrop-blur-xl transition-all ${
+                          className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold backdrop-blur-xl transition-all hover:scale-[1.03] active:scale-[0.97] ${
                             book.is_featured
-                              ? 'border-amethyst-400/40 bg-amethyst-500/25 text-amethyst-200 hover:bg-amethyst-500/35'
-                              : 'border-white/15 bg-white/[0.06] text-slate-300 hover:bg-white/[0.12]'
+                              ? 'border-rose-300/40 bg-gradient-to-r from-burgundy-700/80 to-wine-600/75 text-offwhite-50 hover:from-burgundy-600/85 hover:to-wine-500/85'
+                              : 'border-offwhite-100/15 bg-offwhite-100/[0.06] text-offwhite-300 hover:bg-offwhite-100/[0.12]'
                           }`}
                         >
                           <Sparkles className="h-3 w-3" />
@@ -323,14 +344,14 @@ export function AdminBooksManager({
 
       {/* Delete Confirmation Liquid Glass Modal */}
       {confirmDeleteBook && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-abyss-950/75 p-4 backdrop-blur-md">
-          <div className="liquid-panel w-full max-w-md p-6 space-y-4">
-            <h3 className="font-serif text-lg font-bold text-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-charcoal-950/80 p-4 backdrop-blur-md">
+          <div className="liquid-panel animate-modal-pop w-full max-w-md p-6 space-y-4">
+            <h3 className="font-serif text-lg font-bold text-offwhite-50">
               Delete Book &amp; Cloud Files?
             </h3>
-            <p className="text-sm text-slate-300 leading-relaxed">
+            <p className="text-sm text-offwhite-200 leading-relaxed">
               This will permanently remove{' '}
-              <span className="font-semibold text-white">
+              <span className="font-semibold text-champagne-200">
                 &ldquo;{confirmDeleteBook.title}&rdquo;
               </span>{' '}
               from the digital library database and delete its uploaded{' '}

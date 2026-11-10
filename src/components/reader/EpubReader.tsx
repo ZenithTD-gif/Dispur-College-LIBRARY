@@ -28,9 +28,9 @@ interface EpubReaderProps {
 type ReaderTheme = 'light' | 'sepia' | 'night';
 
 const THEME_STYLES: Record<ReaderTheme, { bg: string; color: string }> = {
-  light: { bg: '#FCFBF8', color: '#0F213B' },
-  sepia: { bg: '#F4ECD8', color: '#3B2F1E' },
-  night: { bg: '#0F172A', color: '#E2E8F0' },
+  light: { bg: '#FAF7F2', color: '#24060C' },
+  sepia: { bg: '#F2E5CF', color: '#3D0915' },
+  night: { bg: '#140D10', color: '#F2EBE2' },
 };
 
 export function EpubReader({
@@ -189,8 +189,8 @@ export function EpubReader({
   }, [nextPage, prevPage]);
 
   return (
-    <div ref={shellRef} className="flex h-screen flex-col bg-abyss-950 text-slate-100">
-      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.1] bg-abyss-900/75 px-3 py-2.5 backdrop-blur-2xl backdrop-saturate-150 sm:px-5">
+    <div ref={shellRef} className="flex h-screen flex-col bg-charcoal-950 text-offwhite-100">
+      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-offwhite-100/[0.1] bg-gradient-to-r from-charcoal-950/90 via-maroon-950/85 to-charcoal-900/90 px-3 py-2.5 backdrop-blur-2xl backdrop-saturate-150 sm:px-5">
         <div className="flex items-center gap-2.5 min-w-0">
           <Link
             href={`/library/books/${bookId}`}
@@ -204,14 +204,14 @@ export function EpubReader({
             onClick={() => setTocOpen((p) => !p)}
             className="glass-btn px-3 py-1.5 text-xs shrink-0"
           >
-            <List className="h-3.5 w-3.5 text-amethyst-300" />
+            <List className="h-3.5 w-3.5 text-champagne-300" />
             <span className="hidden sm:inline">Chapters</span>
           </button>
           <div className="min-w-0">
-            <h1 className="truncate font-serif text-sm font-bold text-white sm:text-base">
+            <h1 className="truncate font-serif text-sm font-bold text-offwhite-50 sm:text-base">
               {title}
             </h1>
-            <p className="truncate text-[11px] text-slate-400">
+            <p className="truncate text-[11px] text-offwhite-300/75">
               {author} {chapterLabel ? `• ${chapterLabel}` : ''}
             </p>
           </div>
@@ -219,27 +219,27 @@ export function EpubReader({
 
         <div className="flex items-center gap-2">
           {/* Font & Theme Glass Controls */}
-          <div className="hidden md:flex items-center gap-1 rounded-full border border-white/[0.14] bg-white/[0.06] px-2 py-1 backdrop-blur-xl">
+          <div className="hidden md:flex items-center gap-1 rounded-full border border-offwhite-100/[0.15] bg-offwhite-100/[0.06] px-2 py-1 backdrop-blur-xl">
             <button
               type="button"
               onClick={() => setFontSize((s) => Math.max(80, s - 10))}
-              className="rounded-full px-2 py-0.5 text-xs font-semibold transition-colors hover:bg-white/[0.12]"
+              className="rounded-full px-2 py-0.5 text-xs font-semibold transition-colors hover:bg-offwhite-100/[0.12]"
               title="Decrease text size"
             >
               A-
             </button>
-            <span className="font-mono text-[11px] px-1 text-slate-200">{fontSize}%</span>
+            <span className="font-mono text-[11px] px-1 text-offwhite-200">{fontSize}%</span>
             <button
               type="button"
               onClick={() => setFontSize((s) => Math.min(160, s + 10))}
-              className="rounded-full px-2 py-0.5 text-xs font-semibold transition-colors hover:bg-white/[0.12]"
+              className="rounded-full px-2 py-0.5 text-xs font-semibold transition-colors hover:bg-offwhite-100/[0.12]"
               title="Increase text size"
             >
               A+
             </button>
           </div>
 
-          <div className="hidden sm:flex items-center gap-1 rounded-full border border-white/[0.14] bg-white/[0.06] px-1.5 py-1 backdrop-blur-xl">
+          <div className="hidden sm:flex items-center gap-1 rounded-full border border-offwhite-100/[0.15] bg-offwhite-100/[0.06] px-1.5 py-1 backdrop-blur-xl">
             {(['light', 'sepia', 'night'] as ReaderTheme[]).map((t) => (
               <button
                 key={t}
@@ -247,8 +247,8 @@ export function EpubReader({
                 onClick={() => setTheme(t)}
                 className={`rounded-full px-2.5 py-0.5 text-[11px] capitalize font-medium transition-all ${
                   theme === t
-                    ? 'border border-white/25 bg-gradient-to-r from-blue-500/45 to-amethyst-600/45 text-white'
-                    : 'text-slate-300 hover:bg-white/[0.1]'
+                    ? 'border border-champagne-300/35 bg-gradient-to-r from-maroon-800/80 to-wine-600/80 text-white'
+                    : 'text-offwhite-300 hover:bg-offwhite-100/[0.1]'
                 }`}
               >
                 {t}
@@ -274,7 +274,7 @@ export function EpubReader({
               <span className="hidden md:inline">Download EPUB</span>
             </a>
           ) : (
-            <span className="inline-flex items-center gap-1 rounded-full border border-rose-400/30 bg-burgundy-800/35 px-3 py-1.5 text-[11px] font-medium text-rose-200 backdrop-blur-xl">
+            <span className="inline-flex items-center gap-1 rounded-full border border-rose-300/35 bg-wine-700/30 px-3 py-1.5 text-[11px] font-medium text-rose-100 backdrop-blur-xl">
               <Lock className="h-3.5 w-3.5" />
               <span className="hidden md:inline">Read Only</span>
             </span>
@@ -285,21 +285,21 @@ export function EpubReader({
       <div className="relative flex min-h-0 flex-1 overflow-hidden">
         {/* Frosted Glass Chapters Drawer */}
         {tocOpen && (
-          <aside className="z-20 w-72 shrink-0 overflow-y-auto border-r border-white/[0.1] bg-abyss-900/85 p-4 backdrop-blur-2xl">
+          <aside className="animate-page-enter z-20 w-72 shrink-0 overflow-y-auto border-r border-offwhite-100/[0.12] bg-charcoal-900/90 p-4 backdrop-blur-2xl">
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-xs font-semibold uppercase tracking-widest text-amethyst-300">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-champagne-300">
                 Table of Contents
               </h2>
               <button
                 type="button"
                 onClick={() => setTocOpen(false)}
-                className="rounded-full p-1 text-slate-300 hover:bg-white/[0.1] hover:text-white"
+                className="rounded-full p-1 text-offwhite-300 hover:bg-offwhite-100/[0.1] hover:text-white"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
             {toc.length === 0 ? (
-              <p className="text-xs text-slate-400">No chapter index found in EPUB.</p>
+              <p className="text-xs text-offwhite-400">No chapter index found in EPUB.</p>
             ) : (
               <ul className="space-y-1">
                 {toc.map((item) => (
@@ -310,7 +310,7 @@ export function EpubReader({
                         renditionRef.current?.display(item.href);
                         setTocOpen(false);
                       }}
-                      className="w-full rounded-xl px-3 py-2 text-left text-xs text-slate-200 transition-colors hover:bg-white/[0.1] hover:text-white"
+                      className="w-full rounded-xl px-3 py-2 text-left text-xs text-offwhite-200 transition-colors hover:bg-offwhite-100/[0.1] hover:text-white"
                     >
                       {item.label}
                     </button>
@@ -330,16 +330,16 @@ export function EpubReader({
           }}
         >
           {loading && (
-            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-abyss-950/90 backdrop-blur-md">
-              <Loader2 className="h-8 w-8 animate-spin text-amethyst-400" />
-              <p className="text-sm text-slate-100">Opening EPUB e-book...</p>
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-charcoal-950/90 backdrop-blur-md">
+              <Loader2 className="h-8 w-8 animate-spin text-champagne-300" />
+              <p className="text-sm text-offwhite-100">Opening EPUB e-book...</p>
             </div>
           )}
 
           {error && !loading && (
-            <div className="liquid-glass max-w-md border-rose-400/35 bg-burgundy-900/75 p-6 text-center text-rose-100">
+            <div className="liquid-glass max-w-md border-wine-400/40 bg-maroon-950/85 p-6 text-center text-rose-100">
               <p className="font-serif text-base font-bold">Could Not Open EPUB</p>
-              <p className="mt-2 text-xs text-rose-200/80">{error}</p>
+              <p className="mt-2 text-xs text-rose-200/85">{error}</p>
             </div>
           )}
 
@@ -347,7 +347,7 @@ export function EpubReader({
             type="button"
             onClick={prevPage}
             aria-label="Previous section"
-            className="hidden sm:flex h-12 w-10 items-center justify-center rounded-full border border-white/20 bg-abyss-950/60 text-slate-100 backdrop-blur-xl transition-all hover:bg-abyss-900/85 hover:scale-105 mr-2 shrink-0"
+            className="hidden sm:flex h-12 w-10 items-center justify-center rounded-full border border-champagne-300/25 bg-charcoal-950/70 text-offwhite-100 backdrop-blur-xl transition-all hover:bg-maroon-900/85 hover:scale-105 mr-2 shrink-0"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
@@ -361,7 +361,7 @@ export function EpubReader({
             type="button"
             onClick={nextPage}
             aria-label="Next section"
-            className="hidden sm:flex h-12 w-10 items-center justify-center rounded-full border border-white/20 bg-abyss-950/60 text-slate-100 backdrop-blur-xl transition-all hover:bg-abyss-900/85 hover:scale-105 ml-2 shrink-0"
+            className="hidden sm:flex h-12 w-10 items-center justify-center rounded-full border border-champagne-300/25 bg-charcoal-950/70 text-offwhite-100 backdrop-blur-xl transition-all hover:bg-maroon-900/85 hover:scale-105 ml-2 shrink-0"
           >
             <ChevronRight className="h-5 w-5" />
           </button>
@@ -369,7 +369,7 @@ export function EpubReader({
       </div>
 
       {/* Mobile Glass Bottom Page Turn Bar */}
-      <div className="flex items-center justify-between border-t border-white/[0.1] bg-abyss-900/80 px-4 py-2 backdrop-blur-2xl sm:hidden">
+      <div className="flex items-center justify-between border-t border-offwhite-100/[0.1] bg-charcoal-950/85 px-4 py-2 backdrop-blur-2xl sm:hidden">
         <button
           type="button"
           onClick={prevPage}

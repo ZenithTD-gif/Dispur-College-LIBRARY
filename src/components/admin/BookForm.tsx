@@ -14,6 +14,7 @@ import {
   Trash2,
   UploadCloud,
 } from 'lucide-react';
+import { GlassToast, type ToastMessage } from '@/components/shared/GlassToast';
 import { formatFileSize } from '@/lib/validation';
 import type { BookWithCategory, Category } from '@/types/library';
 
@@ -124,6 +125,7 @@ export function BookForm({
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
+  const [toast, setToast] = useState<ToastMessage | null>(null);
 
   async function cleanupUnlinkedUpload(bucket: 'book-files' | 'book-covers', path: string) {
     try {
@@ -190,10 +192,15 @@ export function BookForm({
         mimeType: signData.mimeType,
         fileSize: file.size,
       });
+      setToast({
+        id: Date.now(),
+        type: 'success',
+        text: `${file.name} uploaded securely to cloud storage.`,
+      });
     } catch (err) {
-      setBookUploadError(
-        err instanceof Error ? err.message : 'Book file upload failed.'
-      );
+      const msg = err instanceof Error ? err.message : 'Book file upload failed.';
+      setBookUploadError(msg);
+      setToast({ id: Date.now(), type: 'error', text: msg });
     } finally {
       setBookUploadProgress(null);
       e.target.value = '';
@@ -254,10 +261,15 @@ export function BookForm({
         previewUrl,
       });
       setRemoveExistingCover(false);
+      setToast({
+        id: Date.now(),
+        type: 'success',
+        text: 'Cover image uploaded.',
+      });
     } catch (err) {
-      setCoverUploadError(
-        err instanceof Error ? err.message : 'Cover upload failed.'
-      );
+      const msg = err instanceof Error ? err.message : 'Cover upload failed.';
+      setCoverUploadError(msg);
+      setToast({ id: Date.now(), type: 'error', text: msg });
     } finally {
       setCoverUploadProgress(null);
       e.target.value = '';
@@ -363,10 +375,12 @@ export function BookForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      <GlassToast toast={toast} onDismiss={() => setToast(null)} />
+
       {formError && (
         <div
           role="alert"
-          className="flex items-start gap-2.5 rounded-2xl border border-rose-400/35 bg-rose-500/15 p-4 text-sm text-rose-200 backdrop-blur-xl"
+          className="flex items-start gap-2.5 rounded-2xl border border-wine-400/45 bg-wine-700/25 p-4 text-sm text-rose-100 backdrop-blur-xl"
         >
           <AlertCircle className="h-5 w-5 text-rose-300 shrink-0 mt-0.5" />
           <span>{formError}</span>
@@ -374,8 +388,8 @@ export function BookForm({
       )}
 
       {formSuccess && (
-        <div className="flex items-start gap-2.5 rounded-2xl border border-emerald-400/35 bg-emerald-500/15 p-4 text-sm text-emerald-200 backdrop-blur-xl">
-          <CheckCircle2 className="h-5 w-5 text-emerald-300 shrink-0 mt-0.5" />
+        <div className="flex items-start gap-2.5 rounded-2xl border border-champagne-300/40 bg-champagne-400/15 p-4 text-sm text-champagne-100 backdrop-blur-xl">
+          <CheckCircle2 className="h-5 w-5 text-champagne-300 shrink-0 mt-0.5" />
           <span>{formSuccess}</span>
         </div>
       )}
@@ -384,12 +398,12 @@ export function BookForm({
         {/* Left Metadata Form */}
         <div className="lg:col-span-7 space-y-5">
           <div className="liquid-glass p-6 space-y-4">
-            <h2 className="font-serif text-lg font-bold text-white border-b border-white/[0.1] pb-3">
+            <h2 className="font-serif text-lg font-bold text-offwhite-50 border-b border-offwhite-100/[0.1] pb-3">
               Book Information
             </h2>
 
             <div>
-              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-offwhite-200">
                 Book Title *
               </label>
               <input
@@ -404,7 +418,7 @@ export function BookForm({
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-offwhite-200">
                   Author Name *
                 </label>
                 <input
@@ -418,7 +432,7 @@ export function BookForm({
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-offwhite-200">
                   Subject *
                 </label>
                 <input
@@ -434,7 +448,7 @@ export function BookForm({
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-offwhite-200">
                   Category *
                 </label>
                 <select
@@ -456,7 +470,7 @@ export function BookForm({
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-offwhite-200">
                   Language
                 </label>
                 <input
@@ -470,7 +484,7 @@ export function BookForm({
             </div>
 
             <div>
-              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-offwhite-200">
                 Description / Overview *
               </label>
               <textarea
@@ -486,13 +500,13 @@ export function BookForm({
 
           {/* Publication Info & Permissions */}
           <div className="liquid-glass p-6 space-y-4">
-            <h2 className="font-serif text-lg font-bold text-white border-b border-white/[0.1] pb-3">
+            <h2 className="font-serif text-lg font-bold text-offwhite-50 border-b border-offwhite-100/[0.1] pb-3">
               Publication Details &amp; Access Controls
             </h2>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-offwhite-200">
                   Publisher
                 </label>
                 <input
@@ -505,7 +519,7 @@ export function BookForm({
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-offwhite-200">
                   Publication Year
                 </label>
                 <input
@@ -520,7 +534,7 @@ export function BookForm({
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-offwhite-200">
                   ISBN (Optional)
                 </label>
                 <input
@@ -533,7 +547,7 @@ export function BookForm({
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-offwhite-200">
                   Page Count (Optional)
                 </label>
                 <input
@@ -548,19 +562,19 @@ export function BookForm({
               </div>
             </div>
 
-            <div className="space-y-3 pt-3 border-t border-white/[0.1]">
+            <div className="space-y-3 pt-3 border-t border-offwhite-100/[0.1]">
               <label className="flex items-start gap-3 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={allowDownload}
                   onChange={(e) => setAllowDownload(e.target.checked)}
-                  className="mt-1 h-4 w-4 rounded border-white/30 bg-abyss-950/70 text-amethyst-500 focus:ring-amethyst-400"
+                  className="mt-1 h-4 w-4 rounded border-champagne-300/40 bg-charcoal-950/70 text-wine-600 accent-wine-600 focus:ring-champagne-300"
                 />
                 <div>
-                  <span className="block text-sm font-semibold text-white">
+                  <span className="block text-sm font-semibold text-offwhite-50">
                     Allow Student Downloads
                   </span>
-                  <span className="block text-xs text-slate-400">
+                  <span className="block text-xs text-offwhite-300/75">
                     When disabled, students can only read this book online in the integrated browser reader.
                   </span>
                 </div>
@@ -571,13 +585,13 @@ export function BookForm({
                   type="checkbox"
                   checked={isFeatured}
                   onChange={(e) => setIsFeatured(e.target.checked)}
-                  className="mt-1 h-4 w-4 rounded border-white/30 bg-abyss-950/70 text-amethyst-500 focus:ring-amethyst-400"
+                  className="mt-1 h-4 w-4 rounded border-champagne-300/40 bg-charcoal-950/70 text-wine-600 accent-wine-600 focus:ring-champagne-300"
                 />
                 <div>
-                  <span className="block text-sm font-semibold text-white">
+                  <span className="block text-sm font-semibold text-offwhite-50">
                     Feature on Library Homepage
                   </span>
-                  <span className="block text-xs text-slate-400">
+                  <span className="block text-xs text-offwhite-300/75">
                     Highlight this title in the Featured Books showcase on /library.
                   </span>
                 </div>
@@ -590,11 +604,11 @@ export function BookForm({
         <div className="lg:col-span-5 space-y-5">
           {/* Book Document Upload */}
           <div className="liquid-glass p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-white/[0.1] pb-3">
-              <h2 className="font-serif text-lg font-bold text-white">
+            <div className="flex items-center justify-between border-b border-offwhite-100/[0.1] pb-3">
+              <h2 className="font-serif text-lg font-bold text-offwhite-50">
                 Book Document (PDF / EPUB) {mode === 'create' ? '*' : ''}
               </h2>
-              <span className="glass-pill font-mono text-[11px] font-semibold text-blue-200">
+              <span className="glass-pill font-mono text-[11px] font-semibold text-champagne-200">
                 Max {maxBookMb} MB
               </span>
             </div>
@@ -603,12 +617,12 @@ export function BookForm({
               <div className="liquid-well p-3.5 space-y-2">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <FileText className="h-5 w-5 text-amethyst-300 shrink-0" />
+                    <FileText className="h-5 w-5 text-champagne-300 shrink-0" />
                     <div className="min-w-0">
-                      <p className="truncate text-xs font-semibold text-white">
+                      <p className="truncate text-xs font-semibold text-offwhite-50">
                         {initialBook.file_name}
                       </p>
-                      <p className="text-[11px] font-mono text-slate-400">
+                      <p className="text-[11px] font-mono text-offwhite-300/75">
                         {initialBook.file_type.toUpperCase()} •{' '}
                         {formatFileSize(initialBook.file_size)}
                       </p>
@@ -627,20 +641,20 @@ export function BookForm({
             )}
 
             {uploadedBook && (
-              <div className="rounded-2xl border border-emerald-400/35 bg-emerald-500/15 p-3.5 space-y-1.5 backdrop-blur-xl">
+              <div className="rounded-2xl border border-champagne-300/40 bg-champagne-400/15 p-3.5 space-y-1.5 backdrop-blur-xl">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-300 shrink-0" />
-                    <span className="truncate text-xs font-semibold text-emerald-100">
+                    <CheckCircle2 className="h-4 w-4 text-champagne-300 shrink-0" />
+                    <span className="truncate text-xs font-semibold text-champagne-100">
                       {uploadedBook.fileName}
                     </span>
                   </div>
-                  <span className="font-mono text-[11px] text-emerald-200 shrink-0">
+                  <span className="font-mono text-[11px] text-champagne-200 shrink-0">
                     {uploadedBook.fileType.toUpperCase()} •{' '}
                     {formatFileSize(uploadedBook.fileSize)}
                   </span>
                 </div>
-                <p className="text-[11px] text-emerald-200/80">
+                <p className="text-[11px] text-champagne-200/80">
                   Uploaded securely to private cloud storage bucket.
                 </p>
               </div>
@@ -648,36 +662,38 @@ export function BookForm({
 
             {bookUploadProgress !== null && (
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs font-medium text-slate-200">
+                <div className="flex items-center justify-between text-xs font-medium text-offwhite-100">
                   <span className="flex items-center gap-1.5">
-                    <Loader2 className="h-3.5 w-3.5 animate-spin text-amethyst-300" />
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-champagne-300" />
                     Uploading to Supabase Storage...
                   </span>
-                  <span className="font-mono">{bookUploadProgress}%</span>
+                  <span className="font-mono text-champagne-200">{bookUploadProgress}%</span>
                 </div>
-                <div className="h-2 w-full overflow-hidden rounded-full bg-white/[0.1]">
+                <div className="relative h-2.5 w-full overflow-hidden rounded-full border border-offwhite-100/15 bg-charcoal-950/70">
                   <div
-                    className="h-full bg-gradient-to-r from-blue-400 via-amethyst-400 to-rose-400 transition-all duration-150"
+                    className="relative h-full overflow-hidden rounded-full bg-gradient-to-r from-maroon-700 via-wine-500 to-champagne-300 transition-all duration-150"
                     style={{ width: `${bookUploadProgress}%` }}
-                  />
+                  >
+                    <div className="animate-shimmer absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+                  </div>
                 </div>
               </div>
             )}
 
             {bookUploadError && (
-              <p className="rounded-2xl border border-rose-400/35 bg-rose-500/15 p-3 text-xs text-rose-200">
+              <p className="rounded-2xl border border-wine-400/45 bg-wine-700/25 p-3 text-xs text-rose-100">
                 {bookUploadError}
               </p>
             )}
 
-            <label className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-white/25 bg-abyss-950/45 p-6 text-center transition-all duration-300 hover:border-amethyst-400/60 hover:bg-white/[0.06]">
-              <UploadCloud className="h-8 w-8 text-amethyst-300 mb-2" />
-              <span className="text-xs font-semibold text-white">
+            <label className="group flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-champagne-300/30 bg-charcoal-950/50 p-6 text-center transition-all duration-300 hover:border-champagne-300/60 hover:bg-maroon-950/40">
+              <UploadCloud className="h-8 w-8 text-champagne-300 mb-2 transition-transform duration-300 group-hover:-translate-y-0.5" />
+              <span className="text-xs font-semibold text-offwhite-50">
                 {uploadedBook || mode === 'edit'
                   ? 'Click to replace PDF or EPUB file'
                   : 'Click to select PDF or EPUB file'}
               </span>
-              <span className="mt-1 text-[11px] text-slate-400">
+              <span className="mt-1 text-[11px] text-offwhite-300/75">
                 Accepted formats: .pdf, .epub
               </span>
               <input
@@ -692,11 +708,11 @@ export function BookForm({
 
           {/* Book Cover Upload */}
           <div className="liquid-glass p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-white/[0.1] pb-3">
-              <h2 className="font-serif text-lg font-bold text-white">
+            <div className="flex items-center justify-between border-b border-offwhite-100/[0.1] pb-3">
+              <h2 className="font-serif text-lg font-bold text-offwhite-50">
                 Book Cover Image
               </h2>
-              <span className="glass-pill font-mono text-[11px] font-semibold text-blue-200">
+              <span className="glass-pill font-mono text-[11px] font-semibold text-champagne-200">
                 Max {maxCoverMb} MB
               </span>
             </div>
@@ -706,10 +722,10 @@ export function BookForm({
                 <img
                   src={activeCoverPreview}
                   alt="Cover preview"
-                  className="h-28 w-20 rounded-xl object-cover border border-white/20 shrink-0"
+                  className="h-28 w-20 rounded-xl object-cover border border-champagne-300/25 shrink-0"
                 />
                 <div className="flex-1 min-w-0 space-y-2">
-                  <p className="text-xs font-semibold text-white truncate">
+                  <p className="text-xs font-semibold text-offwhite-50 truncate">
                     {uploadedCover ? uploadedCover.fileName : 'Current Cover Image'}
                   </p>
                   <button
@@ -733,31 +749,33 @@ export function BookForm({
 
             {coverUploadProgress !== null && (
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs font-medium text-slate-200">
+                <div className="flex items-center justify-between text-xs font-medium text-offwhite-100">
                   <span>Uploading cover image...</span>
-                  <span className="font-mono">{coverUploadProgress}%</span>
+                  <span className="font-mono text-champagne-200">{coverUploadProgress}%</span>
                 </div>
-                <div className="h-2 w-full overflow-hidden rounded-full bg-white/[0.1]">
+                <div className="relative h-2.5 w-full overflow-hidden rounded-full border border-offwhite-100/15 bg-charcoal-950/70">
                   <div
-                    className="h-full bg-gradient-to-r from-blue-400 to-amethyst-400 transition-all duration-150"
+                    className="relative h-full overflow-hidden rounded-full bg-gradient-to-r from-burgundy-700 via-rose-400 to-champagne-300 transition-all duration-150"
                     style={{ width: `${coverUploadProgress}%` }}
-                  />
+                  >
+                    <div className="animate-shimmer absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+                  </div>
                 </div>
               </div>
             )}
 
             {coverUploadError && (
-              <p className="rounded-2xl border border-rose-400/35 bg-rose-500/15 p-3 text-xs text-rose-200">
+              <p className="rounded-2xl border border-wine-400/45 bg-wine-700/25 p-3 text-xs text-rose-100">
                 {coverUploadError}
               </p>
             )}
 
-            <label className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-white/25 bg-abyss-950/45 p-5 text-center transition-all duration-300 hover:border-amethyst-400/60 hover:bg-white/[0.06]">
-              <ImageIcon className="h-7 w-7 text-amethyst-300 mb-1.5" />
-              <span className="text-xs font-semibold text-white">
+            <label className="group flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-champagne-300/30 bg-charcoal-950/50 p-5 text-center transition-all duration-300 hover:border-champagne-300/60 hover:bg-maroon-950/40">
+              <ImageIcon className="h-7 w-7 text-champagne-300 mb-1.5 transition-transform duration-300 group-hover:-translate-y-0.5" />
+              <span className="text-xs font-semibold text-offwhite-50">
                 {activeCoverPreview ? 'Replace cover image' : 'Upload cover image (optional)'}
               </span>
-              <span className="mt-1 text-[11px] text-slate-400">
+              <span className="mt-1 text-[11px] text-offwhite-300/75">
                 JPG, PNG, or WebP • Clean academic fallback shown if omitted
               </span>
               <input
@@ -787,7 +805,7 @@ export function BookForm({
                 </>
               ) : (
                 <>
-                  <BookOpen className="h-4 w-4 text-amethyst-300" />
+                  <BookOpen className="h-4 w-4 text-champagne-200" />
                   {mode === 'create' ? 'Publish Book to Library' : 'Save Book Changes'}
                 </>
               )}

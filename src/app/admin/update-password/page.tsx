@@ -6,11 +6,11 @@ import { useRouter } from 'next/navigation';
 import {
   AlertCircle,
   ArrowLeft,
-  BookMarked,
   CheckCircle2,
   Loader2,
   Lock,
 } from 'lucide-react';
+import { DispurCollegeLogo } from '@/components/shared/DispurCollegeLogo';
 import { isSupabaseConfigured } from '@/lib/env';
 import { getSupabaseBrowserClient } from '@/lib/supabase/browser';
 
@@ -118,8 +118,8 @@ export default function UpdateAdminPasswordPage() {
 
   return (
     <div className="relative flex min-h-screen flex-col justify-between overflow-hidden px-4 py-10 sm:px-6">
-      <div className="pointer-events-none absolute -top-28 left-1/4 h-96 w-96 rounded-full bg-blue-600/20 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-24 right-1/4 h-80 w-80 rounded-full bg-burgundy-700/20 blur-3xl" />
+      <div className="pointer-events-none absolute -top-28 left-1/4 h-96 w-96 animate-float-slow rounded-full bg-maroon-700/35 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 right-1/4 h-80 w-80 rounded-full bg-burgundy-600/25 blur-3xl" />
 
       <div className="relative mx-auto w-full max-w-md">
         <Link
@@ -131,32 +131,32 @@ export default function UpdateAdminPasswordPage() {
         </Link>
       </div>
 
-      <div className="relative mx-auto w-full max-w-md space-y-6 my-8">
-        <div className="text-center space-y-2.5">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-white/25 bg-gradient-to-br from-blue-500/35 via-amethyst-500/30 to-burgundy-700/40 text-white shadow-[0_12px_28px_-6px_rgba(99,102,241,0.5),inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-xl">
-            <BookMarked className="h-6 w-6 text-amethyst-300" />
+      <div className="animate-page-enter relative mx-auto w-full max-w-md space-y-6 my-8">
+        <div className="text-center space-y-3">
+          <div className="flex justify-center">
+            <DispurCollegeLogo size="lg" />
           </div>
-          <h1 className="font-serif text-2xl font-bold text-white sm:text-3xl">
+          <h1 className="font-serif text-2xl font-bold text-offwhite-50 sm:text-3xl">
             Set Administrator Password
           </h1>
-          <p className="text-xs text-slate-300">
+          <p className="text-xs text-offwhite-300">
             Complete your invitation or password reset for Dispur College Digital Library
           </p>
         </div>
 
         <div className="liquid-glass p-6 sm:p-8">
           {checkingSession ? (
-            <div className="flex flex-col items-center justify-center py-8 gap-2 text-xs text-slate-300">
-              <Loader2 className="h-5 w-5 animate-spin text-amethyst-400" />
+            <div className="flex flex-col items-center justify-center py-8 gap-2 text-xs text-offwhite-300">
+              <Loader2 className="h-5 w-5 animate-spin text-champagne-300" />
               Verifying administrator session...
             </div>
           ) : !hasSession ? (
             <div className="space-y-4 text-center">
               <AlertCircle className="mx-auto h-8 w-8 text-rose-300" />
-              <p className="text-sm font-semibold text-white">
+              <p className="text-sm font-semibold text-offwhite-50">
                 Verification Link Required or Expired
               </p>
-              <p className="text-xs text-slate-300 leading-relaxed">
+              <p className="text-xs text-offwhite-300 leading-relaxed">
                 Open this page from a valid administrator invitation or password
                 reset email link, or request a new reset link on the login page.
               </p>
@@ -167,25 +167,25 @@ export default function UpdateAdminPasswordPage() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               {errorMsg && (
-                <div className="flex items-start gap-2 rounded-2xl border border-rose-400/35 bg-rose-500/15 p-3 text-xs text-rose-200">
+                <div className="flex items-start gap-2 rounded-2xl border border-wine-400/45 bg-wine-700/25 p-3 text-xs text-rose-100">
                   <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-rose-300" />
                   <span>{errorMsg}</span>
                 </div>
               )}
 
               {successMsg && (
-                <div className="flex items-start gap-2 rounded-2xl border border-emerald-400/35 bg-emerald-500/15 p-3 text-xs text-emerald-200">
-                  <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5 text-emerald-300" />
+                <div className="flex items-start gap-2 rounded-2xl border border-champagne-300/40 bg-champagne-400/15 p-3 text-xs text-champagne-100">
+                  <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5 text-champagne-300" />
                   <span>{successMsg}</span>
                 </div>
               )}
 
               <div>
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-offwhite-200">
                   New Password (min 8 chars)
                 </label>
                 <div className="relative">
-                  <Lock className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Lock className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-offwhite-300/75" />
                   <input
                     type="password"
                     required
@@ -199,11 +199,11 @@ export default function UpdateAdminPasswordPage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-offwhite-200">
                   Confirm New Password
                 </label>
                 <div className="relative">
-                  <Lock className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Lock className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-offwhite-300/75" />
                   <input
                     type="password"
                     required
@@ -235,7 +235,7 @@ export default function UpdateAdminPasswordPage() {
         </div>
       </div>
 
-      <p className="relative text-center text-xs text-slate-400">
+      <p className="relative text-center text-xs text-offwhite-300/70">
         Professional Studies Department • Dispur College
       </p>
     </div>

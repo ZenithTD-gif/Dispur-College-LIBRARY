@@ -31,13 +31,13 @@ export function SearchBar({
   return (
     <form
       onSubmit={handleSubmit}
-      className={`relative flex w-full items-center ${
+      className={`group/search relative flex w-full items-center ${
         variant === 'hero' ? 'max-w-2xl' : 'max-w-xl'
       }`}
       role="search"
     >
       <Search
-        className={`pointer-events-none absolute left-4 z-10 text-amethyst-300/80 ${
+        className={`pointer-events-none absolute left-4 z-10 text-champagne-300/85 transition-transform duration-300 group-focus-within/search:scale-110 group-focus-within/search:text-champagne-200 ${
           variant === 'hero' ? 'h-5 w-5' : 'h-4 w-4'
         }`}
       />
@@ -47,7 +47,7 @@ export function SearchBar({
         onChange={(e) => setQuery(e.target.value)}
         placeholder={placeholder}
         aria-label="Search departmental digital library"
-        className={`w-full rounded-full border border-white/[0.18] bg-white/[0.07] text-white placeholder:text-slate-300/75 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_14px_40px_-10px_rgba(2,6,23,0.7),inset_0_1px_0_rgba(255,255,255,0.22)] transition-all duration-300 ease-liquid focus:border-amethyst-400/60 focus:bg-white/[0.11] focus:outline-none focus:ring-2 focus:ring-amethyst-500/30 ${
+        className={`w-full rounded-full border border-offwhite-100/[0.2] bg-offwhite-100/[0.07] text-offwhite-50 placeholder:text-offwhite-300/65 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_14px_40px_-10px_rgba(10,5,7,0.72),inset_0_1px_0_rgba(250,247,242,0.22)] transition-all duration-300 ease-liquid focus:border-champagne-300/55 focus:bg-offwhite-100/[0.11] focus:outline-none focus:ring-2 focus:ring-rose-300/30 ${
           variant === 'hero'
             ? 'py-4 pl-12 pr-32 text-sm sm:text-base'
             : 'py-2.5 pl-10 pr-24 text-sm'

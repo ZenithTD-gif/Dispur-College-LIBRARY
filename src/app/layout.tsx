@@ -25,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className="relative min-h-screen flex flex-col bg-abyss-950 text-slate-100 overflow-x-hidden">
+      <body className="relative min-h-screen flex flex-col bg-charcoal-950 text-offwhite-100 overflow-x-hidden">
         {children}
       </body>
     </html>

@@ -11,14 +11,14 @@
   }
 
   body {
-    background-color: #050a18;
+    background-color: #110b0d;
     background-image:
-      radial-gradient(ellipse 75% 55% at 15% -5%, rgba(37, 99, 235, 0.22), transparent 60%),
-      radial-gradient(ellipse 55% 45% at 88% 8%, rgba(124, 58, 237, 0.17), transparent 55%),
-      radial-gradient(ellipse 50% 45% at 75% 88%, rgba(159, 18, 57, 0.16), transparent 60%),
-      radial-gradient(ellipse 60% 50% at 12% 85%, rgba(29, 78, 216, 0.14), transparent 60%);
+      radial-gradient(ellipse 75% 55% at 12% -6%, rgba(104, 18, 38, 0.38), transparent 62%),
+      radial-gradient(ellipse 58% 48% at 88% 6%, rgba(136, 25, 49, 0.28), transparent 58%),
+      radial-gradient(ellipse 52% 45% at 78% 86%, rgba(125, 22, 46, 0.24), transparent 60%),
+      radial-gradient(ellipse 55% 45% at 14% 88%, rgba(209, 177, 131, 0.08), transparent 62%);
     background-attachment: fixed;
-    @apply text-slate-100 font-sans selection:bg-violet-500/35 selection:text-white;
+    @apply text-offwhite-100 font-sans selection:bg-wine-600/40 selection:text-offwhite-50;
   }
 
   h1,
@@ -28,96 +28,116 @@
   }
 
   select option {
-    background-color: #091228;
-    color: #f1f5f9;
+    background-color: #1a1013;
+    color: #faf7f2;
   }
 }
 
 @layer components {
-  /* Apple iOS 26 Liquid Glass Surfaces */
-  .liquid-glass,
-  .academic-card {
-    @apply relative rounded-3xl border border-white/[0.12] bg-white/[0.045] backdrop-blur-2xl backdrop-saturate-150 shadow-card transition-all duration-300 ease-liquid;
+  /* Mac-Inspired 3D Liquid Glass Surfaces (Maroon / Burgundy / Champagne / Charcoal) */
+  .liquid-glass {
+    @apply relative rounded-3xl border border-offwhite-100/[0.14] bg-gradient-to-br from-offwhite-100/[0.07] via-charcoal-900/55 to-maroon-950/65 backdrop-blur-2xl backdrop-saturate-150 shadow-card transition-all duration-300 ease-liquid;
   }
 
-  .liquid-glass-hover,
-  .academic-card-hover {
-    @apply liquid-glass hover:-translate-y-1 hover:border-white/[0.24] hover:bg-white/[0.075] hover:shadow-card-hover;
+  .liquid-glass-hover {
+    @apply liquid-glass hover:-translate-y-1.5 hover:border-champagne-300/30 hover:from-offwhite-100/[0.11] hover:via-maroon-900/45 hover:to-burgundy-900/55 hover:shadow-card-hover;
+  }
+
+  /* Subtle Light-Tinted Champagne/Off-white Frosted Surface */
+  .liquid-glass-light {
+    @apply relative rounded-3xl border border-champagne-200/35 bg-gradient-to-br from-offwhite-100/[0.13] via-champagne-100/[0.08] to-rose-100/[0.06] backdrop-blur-2xl backdrop-saturate-150 shadow-card transition-all duration-300 ease-liquid;
   }
 
   .liquid-panel {
-    @apply rounded-3xl border border-white/[0.15] bg-abyss-900/75 backdrop-blur-2xl backdrop-saturate-150 shadow-academic transition-all duration-300 ease-liquid;
+    @apply rounded-3xl border border-champagne-300/20 bg-gradient-to-br from-charcoal-900/90 via-maroon-950/85 to-charcoal-950/90 backdrop-blur-2xl backdrop-saturate-150 shadow-academic transition-all duration-300 ease-liquid;
   }
 
   .liquid-well {
-    @apply rounded-2xl border border-white/[0.09] bg-abyss-950/55 backdrop-blur-xl shadow-[inset_0_1px_2px_rgba(0,0,0,0.45)];
+    @apply rounded-2xl border border-offwhite-100/[0.1] bg-charcoal-950/60 backdrop-blur-xl shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)];
   }
 
-  /* Transparent Liquid Glass Buttons */
+  /* Transparent Mac Liquid Glass Buttons */
   .glass-btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-full border border-white/[0.18] bg-white/[0.06] px-4 py-2.5 text-sm font-semibold text-slate-100 backdrop-blur-xl backdrop-saturate-150 shadow-glass-btn transition-all duration-300 ease-liquid hover:-translate-y-0.5 hover:border-white/[0.32] hover:bg-white/[0.14] hover:text-white hover:shadow-glass-btn-hover active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-abyss-950 disabled:pointer-events-none disabled:opacity-45;
+    @apply relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full border border-offwhite-100/[0.18] bg-offwhite-100/[0.06] px-4 py-2.5 text-sm font-semibold text-offwhite-100 backdrop-blur-xl backdrop-saturate-150 shadow-glass-btn transition-all duration-300 ease-liquid hover:-translate-y-0.5 hover:border-champagne-300/40 hover:bg-offwhite-100/[0.13] hover:text-white hover:shadow-glass-btn-hover active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-champagne-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal-950 disabled:pointer-events-none disabled:opacity-45;
   }
 
-  .glass-btn-primary,
-  .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full border border-white/25 bg-gradient-to-r from-blue-500/35 via-indigo-500/30 to-burgundy-700/35 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-xl backdrop-saturate-150 shadow-[0_8px_24px_-6px_rgba(79,70,229,0.5),inset_0_1px_0_rgba(255,255,255,0.38)] transition-all duration-300 ease-liquid hover:-translate-y-0.5 hover:border-white/40 hover:from-blue-500/50 hover:via-indigo-500/45 hover:to-burgundy-600/50 hover:shadow-[0_14px_30px_-6px_rgba(99,102,241,0.55),inset_0_1px_0_rgba(255,255,255,0.5)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-abyss-950 disabled:pointer-events-none disabled:opacity-45;
+  .glass-btn-primary {
+    @apply relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full border border-rose-200/30 bg-gradient-to-r from-maroon-800/75 via-burgundy-700/70 to-wine-600/75 px-5 py-2.5 text-sm font-semibold text-offwhite-50 backdrop-blur-xl backdrop-saturate-150 shadow-[0_8px_24px_-6px_rgba(125,22,46,0.6),inset_0_1px_0_rgba(250,247,242,0.34)] transition-all duration-300 ease-liquid hover:-translate-y-0.5 hover:border-champagne-300/50 hover:from-maroon-700/85 hover:via-burgundy-600/85 hover:to-wine-500/85 hover:text-white hover:shadow-[0_14px_30px_-6px_rgba(161,34,62,0.65),inset_0_1px_0_rgba(250,247,242,0.48)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300/75 focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal-950 disabled:pointer-events-none disabled:opacity-45;
   }
 
-  .glass-btn-accent,
-  .btn-gold {
-    @apply inline-flex items-center justify-center gap-2 rounded-full border border-rose-300/25 bg-gradient-to-r from-burgundy-700/45 via-burgundy-600/35 to-amethyst-600/35 px-5 py-2.5 text-sm font-semibold text-rose-50 backdrop-blur-xl backdrop-saturate-150 shadow-[0_8px_24px_-6px_rgba(159,18,57,0.48),inset_0_1px_0_rgba(255,255,255,0.34)] transition-all duration-300 ease-liquid hover:-translate-y-0.5 hover:border-rose-200/45 hover:from-burgundy-600/60 hover:to-amethyst-500/50 hover:text-white active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-abyss-950 disabled:pointer-events-none disabled:opacity-45;
-  }
-
-  .btn-secondary {
-    @apply glass-btn;
+  .glass-btn-accent {
+    @apply relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full border border-champagne-200/35 bg-gradient-to-r from-rose-300/20 via-champagne-300/25 to-rose-200/20 px-5 py-2.5 text-sm font-semibold text-champagne-100 backdrop-blur-xl backdrop-saturate-150 shadow-[0_8px_24px_-6px_rgba(184,145,92,0.35),inset_0_1px_0_rgba(255,254,252,0.38)] transition-all duration-300 ease-liquid hover:-translate-y-0.5 hover:border-champagne-200/60 hover:from-rose-300/30 hover:via-champagne-300/35 hover:to-rose-200/30 hover:text-white active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-champagne-300/75 focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal-950 disabled:pointer-events-none disabled:opacity-45;
   }
 
   .glass-btn-danger {
-    @apply inline-flex items-center justify-center gap-2 rounded-full border border-rose-400/30 bg-rose-500/15 px-4 py-2 text-sm font-semibold text-rose-200 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] transition-all duration-300 ease-liquid hover:-translate-y-0.5 hover:border-rose-300/50 hover:bg-rose-500/25 hover:text-white active:scale-[0.97] disabled:pointer-events-none disabled:opacity-45;
+    @apply relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full border border-wine-400/40 bg-wine-700/25 px-4 py-2 text-sm font-semibold text-rose-200 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(250,247,242,0.2)] transition-all duration-300 ease-liquid hover:-translate-y-0.5 hover:border-rose-300/55 hover:bg-wine-600/40 hover:text-white active:scale-[0.97] disabled:pointer-events-none disabled:opacity-45;
   }
 
   .glass-pill {
-    @apply inline-flex items-center gap-1.5 rounded-full border border-white/[0.14] bg-white/[0.06] px-3 py-1 text-xs font-medium text-slate-200 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.16)] transition-all duration-200;
+    @apply inline-flex items-center gap-1.5 rounded-full border border-offwhite-100/[0.15] bg-offwhite-100/[0.06] px-3 py-1 text-xs font-medium text-offwhite-200 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(250,247,242,0.16)] transition-all duration-200;
   }
 
   /* Frosted Glass Inputs */
-  .liquid-input,
-  .input-academic {
-    @apply w-full rounded-2xl border border-white/[0.14] bg-abyss-950/60 px-4 py-2.5 text-sm text-slate-100 placeholder:text-slate-400/80 backdrop-blur-xl shadow-[inset_0_1px_2px_rgba(0,0,0,0.45)] transition-all duration-200 focus:border-blue-400/60 focus:bg-abyss-950/80 focus:outline-none focus:ring-2 focus:ring-violet-500/25 disabled:opacity-50 disabled:text-slate-400;
+  .liquid-input {
+    @apply w-full rounded-2xl border border-offwhite-100/[0.15] bg-charcoal-950/65 px-4 py-2.5 text-sm text-offwhite-100 placeholder:text-offwhite-400/75 backdrop-blur-xl shadow-[inset_0_1px_2px_rgba(0,0,0,0.48)] transition-all duration-200 focus:border-champagne-300/55 focus:bg-charcoal-950/85 focus:outline-none focus:ring-2 focus:ring-rose-300/25 disabled:opacity-50 disabled:text-offwhite-400;
+  }
+
+  /* 3D Perspective Shelf & Interactive Book Card helpers */
+  .perspective-stage {
+    perspective: 1100px;
+  }
+
+  .book-3d-cover {
+    transform: rotateY(-6deg) rotateX(2deg);
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .group:hover .book-3d-cover {
+    transform: rotateY(-1deg) rotateX(0deg) translate3d(0, -4px, 12px);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   .liquid-glass,
-  .academic-card,
   .liquid-glass-hover,
-  .academic-card-hover,
+  .liquid-glass-light,
   .glass-btn,
   .glass-btn-primary,
-  .btn-primary,
   .glass-btn-accent,
-  .btn-gold {
+  .glass-btn-danger,
+  .book-3d-cover,
+  .animate-page-enter,
+  .animate-modal-pop,
+  .animate-toast-in,
+  .animate-float-slow,
+  .animate-shimmer {
     transition: none !important;
+    animation: none !important;
     transform: none !important;
   }
 }
 
-/* Custom translucent scrollbars for reading drawers and admin tables */
+/* Custom warm charcoal/champagne scrollbars */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(5, 10, 24, 0.7);
+  background: rgba(17, 11, 13, 0.75);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.25);
+  background: rgba(214, 184, 141, 0.25);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(167, 139, 250, 0.45);
+  background: rgba(235, 164, 178, 0.45);
 }
 

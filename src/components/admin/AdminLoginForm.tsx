@@ -98,7 +98,7 @@ export function AdminLoginForm({ configured }: { configured: boolean }) {
       {errorMessage && (
         <div
           role="alert"
-          className="flex items-start gap-2.5 rounded-2xl border border-rose-400/35 bg-rose-500/15 px-3.5 py-3 text-xs text-rose-200 backdrop-blur-xl"
+          className="flex items-start gap-2.5 rounded-2xl border border-wine-400/45 bg-wine-700/25 px-3.5 py-3 text-xs text-rose-100 backdrop-blur-xl"
         >
           <AlertCircle className="h-4 w-4 text-rose-300 shrink-0 mt-0.5" />
           <span>{errorMessage}</span>
@@ -106,8 +106,8 @@ export function AdminLoginForm({ configured }: { configured: boolean }) {
       )}
 
       {infoMessage && (
-        <div className="flex items-start gap-2.5 rounded-2xl border border-emerald-400/35 bg-emerald-500/15 px-3.5 py-3 text-xs text-emerald-200 backdrop-blur-xl">
-          <CheckCircle2 className="h-4 w-4 text-emerald-300 shrink-0 mt-0.5" />
+        <div className="flex items-start gap-2.5 rounded-2xl border border-champagne-300/40 bg-champagne-400/15 px-3.5 py-3 text-xs text-champagne-100 backdrop-blur-xl">
+          <CheckCircle2 className="h-4 w-4 text-champagne-300 shrink-0 mt-0.5" />
           <span>{infoMessage}</span>
         </div>
       )}
@@ -115,12 +115,12 @@ export function AdminLoginForm({ configured }: { configured: boolean }) {
       <div>
         <label
           htmlFor="admin-email"
-          className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-300"
+          className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-offwhite-200"
         >
           Administrator Email
         </label>
         <div className="relative">
-          <Mail className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Mail className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-offwhite-300/75" />
           <input
             id="admin-email"
             type="email"
@@ -140,7 +140,7 @@ export function AdminLoginForm({ configured }: { configured: boolean }) {
           <div className="mb-1.5 flex items-center justify-between">
             <label
               htmlFor="admin-password"
-              className="block text-xs font-semibold uppercase tracking-wider text-slate-300"
+              className="block text-xs font-semibold uppercase tracking-wider text-offwhite-200"
             >
               Password
             </label>
@@ -151,13 +151,13 @@ export function AdminLoginForm({ configured }: { configured: boolean }) {
                 setErrorMessage(null);
                 setInfoMessage(null);
               }}
-              className="text-[11px] font-semibold text-amethyst-300 hover:text-white transition-colors"
+              className="text-[11px] font-semibold text-champagne-300 hover:text-white transition-colors"
             >
               Forgot password?
             </button>
           </div>
           <div className="relative">
-            <Lock className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Lock className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-offwhite-300/75" />
             <input
               id="admin-password"
               type={showPassword ? 'text' : 'password'}
@@ -172,7 +172,7 @@ export function AdminLoginForm({ configured }: { configured: boolean }) {
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-offwhite-300/75 hover:text-white transition-colors"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -206,7 +206,7 @@ export function AdminLoginForm({ configured }: { configured: boolean }) {
             setErrorMessage(null);
             setInfoMessage(null);
           }}
-          className="w-full text-center text-xs font-semibold text-amethyst-300 hover:text-white transition-colors"
+          className="w-full text-center text-xs font-semibold text-champagne-300 hover:text-white transition-colors"
         >
           Back to Sign In
         </button>

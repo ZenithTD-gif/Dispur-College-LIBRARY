@@ -269,10 +269,10 @@ export function PdfReader({
   return (
     <div
       ref={shellRef}
-      className="flex h-screen flex-col bg-abyss-950 text-slate-100 select-none"
+      className="flex h-screen flex-col bg-charcoal-950 text-offwhite-100 select-none"
     >
-      {/* Floating Liquid Glass Reader Toolbar */}
-      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.1] bg-abyss-900/75 px-3 py-2.5 backdrop-blur-2xl backdrop-saturate-150 sm:px-5">
+      {/* Floating Mac Liquid Glass Reader Toolbar */}
+      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-offwhite-100/[0.1] bg-gradient-to-r from-charcoal-950/90 via-maroon-950/85 to-charcoal-900/90 px-3 py-2.5 backdrop-blur-2xl backdrop-saturate-150 sm:px-5">
         <div className="flex items-center gap-3 min-w-0">
           <Link
             href={`/library/books/${bookId}`}
@@ -282,20 +282,20 @@ export function PdfReader({
             <span className="hidden sm:inline">Back to Book</span>
           </Link>
           <div className="min-w-0">
-            <h1 className="truncate font-serif text-sm font-bold text-white sm:text-base">
+            <h1 className="truncate font-serif text-sm font-bold text-offwhite-50 sm:text-base">
               {title}
             </h1>
-            <p className="truncate text-[11px] text-slate-400">{author}</p>
+            <p className="truncate text-[11px] text-offwhite-300/75">{author}</p>
           </div>
         </div>
 
         {/* Center Glass Page Controls */}
-        <div className="flex items-center gap-1.5 rounded-full border border-white/[0.14] bg-white/[0.06] px-2.5 py-1 backdrop-blur-xl">
+        <div className="flex items-center gap-1.5 rounded-full border border-offwhite-100/[0.15] bg-offwhite-100/[0.06] px-2.5 py-1 backdrop-blur-xl">
           <button
             type="button"
             onClick={() => goToPage(currentPage - 1)}
             disabled={loading || currentPage <= 1}
-            className="rounded-full p-1 text-slate-100 transition-colors hover:bg-white/[0.12] disabled:opacity-35"
+            className="rounded-full p-1 text-offwhite-100 transition-colors hover:bg-offwhite-100/[0.12] disabled:opacity-35"
             aria-label="Previous page"
             title="Previous page"
           >
@@ -311,16 +311,16 @@ export function PdfReader({
               onBlur={handlePageFormSubmit}
               disabled={loading || numPages === 0}
               aria-label="Current page number"
-              className="w-11 rounded-full border border-white/20 bg-abyss-950/70 px-1.5 py-0.5 text-center font-mono text-xs text-white focus:border-amethyst-400 focus:outline-none"
+              className="w-11 rounded-full border border-champagne-300/30 bg-charcoal-950/75 px-1.5 py-0.5 text-center font-mono text-xs text-offwhite-50 focus:border-champagne-300 focus:outline-none"
             />
-            <span className="font-mono text-slate-300">/ {numPages || '—'}</span>
+            <span className="font-mono text-offwhite-300">/ {numPages || '—'}</span>
           </form>
 
           <button
             type="button"
             onClick={() => goToPage(currentPage + 1)}
             disabled={loading || currentPage >= numPages}
-            className="rounded-full p-1 text-slate-100 transition-colors hover:bg-white/[0.12] disabled:opacity-35"
+            className="rounded-full p-1 text-offwhite-100 transition-colors hover:bg-offwhite-100/[0.12] disabled:opacity-35"
             aria-label="Next page"
             title="Next page"
           >
@@ -330,25 +330,25 @@ export function PdfReader({
 
         {/* Right Zoom, Fullscreen, Download Controls */}
         <div className="flex items-center gap-1.5">
-          <div className="hidden sm:flex items-center gap-1 rounded-full border border-white/[0.14] bg-white/[0.06] px-2 py-1 backdrop-blur-xl">
+          <div className="hidden sm:flex items-center gap-1 rounded-full border border-offwhite-100/[0.15] bg-offwhite-100/[0.06] px-2 py-1 backdrop-blur-xl">
             <button
               type="button"
               onClick={zoomOut}
               disabled={loading}
-              className="rounded-full p-1 text-slate-100 transition-colors hover:bg-white/[0.12] disabled:opacity-40"
+              className="rounded-full p-1 text-offwhite-100 transition-colors hover:bg-offwhite-100/[0.12] disabled:opacity-40"
               aria-label="Zoom out"
               title="Zoom out (-)"
             >
               <ZoomOut className="h-4 w-4" />
             </button>
-            <span className="min-w-[44px] text-center font-mono text-xs text-slate-100">
+            <span className="min-w-[44px] text-center font-mono text-xs text-offwhite-100">
               {scale ? `${Math.round(scale * 100)}%` : '—'}
             </span>
             <button
               type="button"
               onClick={zoomIn}
               disabled={loading}
-              className="rounded-full p-1 text-slate-100 transition-colors hover:bg-white/[0.12] disabled:opacity-40"
+              className="rounded-full p-1 text-offwhite-100 transition-colors hover:bg-offwhite-100/[0.12] disabled:opacity-40"
               aria-label="Zoom in"
               title="Zoom in (+)"
             >
@@ -358,7 +358,7 @@ export function PdfReader({
               type="button"
               onClick={handleFitWidth}
               disabled={loading}
-              className="rounded-full px-2.5 py-0.5 text-[11px] font-semibold text-amethyst-300 transition-colors hover:bg-white/[0.12]"
+              className="rounded-full px-2.5 py-0.5 text-[11px] font-semibold text-champagne-200 transition-colors hover:bg-offwhite-100/[0.12]"
               title="Fit to screen width"
             >
               Fit
@@ -389,7 +389,7 @@ export function PdfReader({
             </a>
           ) : (
             <span
-              className="inline-flex items-center gap-1 rounded-full border border-rose-400/30 bg-burgundy-800/35 px-3 py-1.5 text-[11px] font-medium text-rose-200 backdrop-blur-xl"
+              className="inline-flex items-center gap-1 rounded-full border border-rose-300/35 bg-wine-700/30 px-3 py-1.5 text-[11px] font-medium text-rose-100 backdrop-blur-xl"
               title="Downloading disabled by department"
             >
               <Lock className="h-3.5 w-3.5" />
@@ -400,24 +400,24 @@ export function PdfReader({
       </header>
 
       {/* Mobile Glass Zoom Strip */}
-      <div className="flex items-center justify-between border-b border-white/[0.08] bg-abyss-900/60 px-3 py-1.5 backdrop-blur-xl sm:hidden">
-        <span className="text-[11px] text-slate-300">Zoom Controls</span>
+      <div className="flex items-center justify-between border-b border-offwhite-100/[0.08] bg-charcoal-900/75 px-3 py-1.5 backdrop-blur-xl sm:hidden">
+        <span className="text-[11px] text-offwhite-300">Zoom Controls</span>
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={zoomOut}
-            className="rounded-full border border-white/15 bg-white/10 p-1 text-white"
+            className="rounded-full border border-offwhite-100/20 bg-offwhite-100/10 p-1 text-white"
             aria-label="Zoom out"
           >
             <ZoomOut className="h-3.5 w-3.5" />
           </button>
-          <span className="font-mono text-xs text-slate-100">
+          <span className="font-mono text-xs text-offwhite-100">
             {scale ? `${Math.round(scale * 100)}%` : '—'}
           </span>
           <button
             type="button"
             onClick={zoomIn}
-            className="rounded-full border border-white/15 bg-white/10 p-1 text-white"
+            className="rounded-full border border-offwhite-100/20 bg-offwhite-100/10 p-1 text-white"
             aria-label="Zoom in"
           >
             <ZoomIn className="h-3.5 w-3.5" />
@@ -425,7 +425,7 @@ export function PdfReader({
           <button
             type="button"
             onClick={handleFitWidth}
-            className="rounded-full border border-white/15 bg-white/10 px-2.5 py-0.5 text-[11px] text-amethyst-300"
+            className="rounded-full border border-offwhite-100/20 bg-offwhite-100/10 px-2.5 py-0.5 text-[11px] text-champagne-200"
           >
             Fit
           </button>
@@ -438,27 +438,27 @@ export function PdfReader({
         onContextMenu={(e) => {
           if (!allowDownload) e.preventDefault();
         }}
-        className="relative flex-1 overflow-auto bg-[#060B1A] p-3 sm:p-6 lg:p-8"
+        className="relative flex-1 overflow-auto bg-[#140D10] p-3 sm:p-6 lg:p-8"
       >
         {loading && (
           <div className="flex h-full min-h-[360px] flex-col items-center justify-center gap-3 text-center">
-            <Loader2 className="h-8 w-8 animate-spin text-amethyst-400" />
-            <p className="text-sm font-medium text-slate-100">
+            <Loader2 className="h-8 w-8 animate-spin text-champagne-300" />
+            <p className="text-sm font-medium text-offwhite-100">
               Loading document from cloud library
               {loadProgress > 0 ? ` (${loadProgress}%)` : '...'}
             </p>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-offwhite-300/75">
               Dispur College — Professional Studies Department
             </p>
           </div>
         )}
 
         {error && !loading && (
-          <div className="liquid-glass mx-auto mt-12 max-w-md border-rose-400/35 bg-burgundy-900/40 p-6 text-center space-y-3">
+          <div className="liquid-glass mx-auto mt-12 max-w-md border-wine-400/40 bg-maroon-950/75 p-6 text-center space-y-3">
             <p className="font-serif text-base font-bold text-rose-200">
               Could Not Open Document
             </p>
-            <p className="text-xs text-rose-200/80 leading-relaxed">{error}</p>
+            <p className="text-xs text-rose-200/85 leading-relaxed">{error}</p>
             <button
               type="button"
               onClick={() => window.location.reload()}
@@ -471,10 +471,10 @@ export function PdfReader({
         )}
 
         {!loading && !error && (
-          <div className="mx-auto flex justify-center">
-            <div className="relative rounded-xl bg-white shadow-2xl overflow-hidden ring-1 ring-white/15">
+          <div className="mx-auto flex justify-center animate-page-enter">
+            <div className="relative rounded-2xl bg-white shadow-academic overflow-hidden ring-1 ring-champagne-200/20">
               {rendering && (
-                <div className="pointer-events-none absolute top-3 right-3 z-10 rounded-full border border-white/20 bg-abyss-950/80 px-3 py-1 text-[11px] font-medium text-amethyst-300 backdrop-blur-xl">
+                <div className="pointer-events-none absolute top-3 right-3 z-10 rounded-full border border-champagne-300/35 bg-charcoal-950/85 px-3 py-1 text-[11px] font-medium text-champagne-200 backdrop-blur-xl">
                   Rendering...
                 </div>
               )}

@@ -65,18 +65,18 @@ export default async function BrowseLibraryPage({
     <div className="flex min-h-screen flex-col">
       <LibraryNavbar />
 
-      <main className="flex-1">
-        <div className="relative overflow-hidden border-b border-white/[0.09] bg-abyss-900/50 py-10 backdrop-blur-xl">
-          <div className="pointer-events-none absolute -top-20 right-12 h-56 w-56 rounded-full bg-amethyst-600/20 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-24 left-12 h-56 w-56 rounded-full bg-burgundy-700/20 blur-3xl" />
+      <main className="flex-1 animate-page-enter">
+        <div className="relative overflow-hidden border-b border-offwhite-100/[0.09] bg-gradient-to-r from-charcoal-900/80 via-maroon-950/75 to-burgundy-900/55 py-10 backdrop-blur-xl">
+          <div className="pointer-events-none absolute -top-20 right-12 h-56 w-56 rounded-full bg-wine-700/25 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-24 left-12 h-56 w-56 rounded-full bg-champagne-400/10 blur-3xl" />
           <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <p className="text-xs font-semibold uppercase tracking-widest text-rose-300">
+            <p className="text-xs font-semibold uppercase tracking-widest text-champagne-300">
               Professional Studies Department • Dispur College
             </p>
-            <h1 className="mt-1.5 font-serif text-2xl font-bold text-white sm:text-3xl">
+            <h1 className="mt-1.5 font-serif text-2xl font-bold text-offwhite-50 sm:text-3xl">
               Digital Book Catalog
             </h1>
-            <p className="mt-2 max-w-2xl text-sm text-slate-300">
+            <p className="mt-2 max-w-2xl text-sm text-offwhite-200/85">
               Search and filter departmental books, reference textbooks, PDFs, and
               EPUB study materials.
             </p>
@@ -105,7 +105,7 @@ export default async function BrowseLibraryPage({
               {catalog.totalPages > 1 && (
                 <nav
                   aria-label="Catalog pagination"
-                  className="flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.09] pt-6"
+                  className="flex flex-wrap items-center justify-between gap-3 border-t border-offwhite-100/[0.09] pt-6"
                 >
                   <Link
                     href={pageHref(Math.max(1, catalog.page - 1))}
@@ -118,7 +118,7 @@ export default async function BrowseLibraryPage({
                     Previous
                   </Link>
 
-                  <div className="flex items-center gap-1.5 rounded-full border border-white/[0.12] bg-white/[0.04] p-1 backdrop-blur-xl">
+                  <div className="flex items-center gap-1.5 rounded-full border border-offwhite-100/[0.12] bg-offwhite-100/[0.05] p-1 backdrop-blur-xl">
                     {Array.from({ length: catalog.totalPages }, (_, i) => i + 1)
                       .filter(
                         (p) =>
@@ -132,8 +132,8 @@ export default async function BrowseLibraryPage({
                           href={pageHref(p)}
                           className={`inline-flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all duration-200 ${
                             p === catalog.page
-                              ? 'border border-white/30 bg-gradient-to-r from-blue-500/40 to-amethyst-600/40 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]'
-                              : 'text-slate-300 hover:bg-white/[0.1] hover:text-white'
+                              ? 'border border-champagne-300/40 bg-gradient-to-r from-maroon-800/80 to-wine-600/80 text-offwhite-50 shadow-[inset_0_1px_0_rgba(250,247,242,0.3)]'
+                              : 'text-offwhite-200 hover:bg-offwhite-100/[0.1] hover:text-white'
                           }`}
                         >
                           {p}
@@ -158,13 +158,13 @@ export default async function BrowseLibraryPage({
             </>
           ) : (
             <div className="liquid-glass p-12 text-center space-y-3">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-white/15 bg-white/[0.06]">
-                <BookOpen className="h-6 w-6 text-amethyst-300" />
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-champagne-300/30 bg-gradient-to-br from-maroon-800/70 to-burgundy-800/60">
+                <BookOpen className="h-6 w-6 text-champagne-300" />
               </div>
-              <h2 className="font-serif text-lg font-bold text-white">
+              <h2 className="font-serif text-lg font-bold text-offwhite-50">
                 No Matching Books Found
               </h2>
-              <p className="mx-auto max-w-md text-sm text-slate-300">
+              <p className="mx-auto max-w-md text-sm text-offwhite-300">
                 No books matched your current search or filter criteria. Try
                 clearing filters or searching with another title, author, or subject.
               </p>

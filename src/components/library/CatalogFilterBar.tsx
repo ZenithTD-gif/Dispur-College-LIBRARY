@@ -65,7 +65,7 @@ export function CatalogFilterBar({
     <div className="liquid-glass p-4 sm:p-6 space-y-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-2xl">
-          <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-amethyst-300/80" />
+          <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-champagne-300/80" />
           <input
             type="search"
             value={searchInput}
@@ -82,8 +82,8 @@ export function CatalogFilterBar({
         </form>
 
         <div className="flex items-center justify-between gap-3 text-sm">
-          <p className="text-slate-300 font-medium">
-            Showing <span className="font-bold text-white">{totalResults}</span>{' '}
+          <p className="text-offwhite-300 font-medium">
+            Showing <span className="font-bold text-offwhite-50">{totalResults}</span>{' '}
             {totalResults === 1 ? 'resource' : 'resources'}
           </p>
           {hasActiveFilters && (
@@ -100,10 +100,10 @@ export function CatalogFilterBar({
       </div>
 
       {/* Filters Row */}
-      <div className="grid grid-cols-1 gap-3 pt-3 border-t border-white/[0.09] sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-3 pt-3 border-t border-offwhite-100/[0.09] sm:grid-cols-2 lg:grid-cols-5">
         <div>
-          <label className="mb-1.5 flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-slate-300">
-            <Filter className="h-3 w-3 text-amethyst-300" />
+          <label className="mb-1.5 flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-offwhite-300">
+            <Filter className="h-3 w-3 text-champagne-300" />
             Category
           </label>
           <select
@@ -121,8 +121,8 @@ export function CatalogFilterBar({
         </div>
 
         <div>
-          <label className="mb-1.5 flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-slate-300">
-            <SlidersHorizontal className="h-3 w-3 text-amethyst-300" />
+          <label className="mb-1.5 flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-offwhite-300">
+            <SlidersHorizontal className="h-3 w-3 text-champagne-300" />
             Subject
           </label>
           <select
@@ -140,7 +140,7 @@ export function CatalogFilterBar({
         </div>
 
         <div>
-          <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-slate-300">
+          <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-offwhite-300">
             Format
           </label>
           <select
@@ -157,7 +157,7 @@ export function CatalogFilterBar({
         </div>
 
         <div>
-          <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-slate-300">
+          <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-offwhite-300">
             Download Permission
           </label>
           <select
@@ -173,7 +173,7 @@ export function CatalogFilterBar({
         </div>
 
         <div>
-          <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-slate-300">
+          <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-offwhite-300">
             Sort Order
           </label>
           <select

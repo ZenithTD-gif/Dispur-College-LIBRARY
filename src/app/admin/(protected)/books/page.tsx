@@ -17,16 +17,16 @@ export default async function AdminBooksPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-serif text-2xl font-bold text-white sm:text-3xl">
+          <h1 className="font-serif text-2xl font-bold text-offwhite-50 sm:text-3xl">
             Manage Books
           </h1>
-          <p className="mt-1 text-sm text-slate-300">
+          <p className="mt-1 text-sm text-offwhite-300">
             Edit book details, toggle student download permissions, replace files, or remove resources.
           </p>
         </div>
 
         <Link href="/admin/books/new" className="glass-btn-primary">
-          <PlusCircle className="h-4 w-4 text-amethyst-300" />
+          <PlusCircle className="h-4 w-4 text-champagne-200" />
           Upload New Book
         </Link>
       </div>

@@ -39,10 +39,10 @@ export default async function EditBookPage({
           <ArrowLeft className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-x-0.5" />
           Back to Books
         </Link>
-        <h1 className="font-serif text-2xl font-bold text-white sm:text-3xl">
+        <h1 className="font-serif text-2xl font-bold text-offwhite-50 sm:text-3xl">
           Edit Book
         </h1>
-        <p className="mt-1 text-sm text-slate-300">
+        <p className="mt-1 text-sm text-offwhite-300">
           Update metadata, change student download permissions, or replace uploaded cloud files.
         </p>
       </div>

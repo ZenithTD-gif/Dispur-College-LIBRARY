@@ -20,20 +20,20 @@ export default async function NewBookPage() {
           <ArrowLeft className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-x-0.5" />
           Back to Books
         </Link>
-        <h1 className="font-serif text-2xl font-bold text-white sm:text-3xl">
+        <h1 className="font-serif text-2xl font-bold text-offwhite-50 sm:text-3xl">
           Upload New Book
         </h1>
-        <p className="mt-1 text-sm text-slate-300">
+        <p className="mt-1 text-sm text-offwhite-300">
           Upload a PDF or EPUB book to cloud storage and publish it immediately to the Student Portal.
         </p>
       </div>
 
       {categories.length === 0 ? (
         <div className="liquid-glass p-8 text-center space-y-3">
-          <p className="font-serif text-lg font-bold text-white">
+          <p className="font-serif text-lg font-bold text-offwhite-50">
             Create a Category First
           </p>
-          <p className="text-sm text-slate-300">
+          <p className="text-sm text-offwhite-300">
             At least one category must exist before publishing a book.
           </p>
           <Link href="/admin/categories" className="glass-btn-primary">
