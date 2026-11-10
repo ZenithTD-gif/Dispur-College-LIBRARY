@@ -19,6 +19,11 @@ export function loadDotEnvLocal() {
     ) {
       val = val.slice(1, -1);
     }
+    if (key === 'NEXT_PUBLIC_SUPABASE_URL') {
+      val = val
+        .replace(/\/+(rest|auth|storage|realtime)\/v\d+\/?.*$/i, '')
+        .replace(/\/+$/, '');
+    }
     if (!process.env[key]) {
       process.env[key] = val;
     }

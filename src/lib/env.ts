@@ -12,8 +12,24 @@ function isRealValue(value: string | undefined): value is string {
   return !PLACEHOLDER_MARKERS.some((marker) => trimmed.includes(marker));
 }
 
+export function normalizeSupabaseUrl(raw: string | undefined): string {
+  const trimmed = raw?.trim() || '';
+  if (!trimmed) return '';
+  try {
+    const parsed = new URL(trimmed);
+    const cleanedPath = parsed.pathname
+      .replace(/\/+(rest|auth|storage|realtime)\/v\d+\/?.*$/i, '')
+      .replace(/\/+$/, '');
+    return `${parsed.origin}${cleanedPath}`;
+  } catch {
+    return trimmed
+      .replace(/\/+(rest|auth|storage|realtime)\/v\d+\/?.*$/i, '')
+      .replace(/\/+$/, '');
+  }
+}
+
 export function getPublicEnv() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || '';
+  const supabaseUrl = normalizeSupabaseUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
   const supabasePublishableKey =
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim() ||
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ||

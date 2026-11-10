@@ -35,5 +35,13 @@ describe('environment configuration checks', () => {
     expect(isSupabaseConfigured()).toBe(true);
     expect(isSupabaseAdminConfigured()).toBe(true);
   });
+
+  it('normalizes Supabase URLs accidentally containing /rest/v1/ or trailing slashes', () => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example-proj.supabase.co/rest/v1/';
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_real_abc123';
+
+    expect(getPublicEnv().supabaseUrl).toBe('https://example-proj.supabase.co');
+    expect(isSupabaseConfigured()).toBe(true);
+  });
 });
 
