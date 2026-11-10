@@ -1,0 +1,34 @@
+import type { Metadata } from 'next';
+import '@fontsource/plus-jakarta-sans/400.css';
+import '@fontsource/plus-jakarta-sans/500.css';
+import '@fontsource/plus-jakarta-sans/600.css';
+import '@fontsource/plus-jakarta-sans/700.css';
+import '@fontsource/merriweather/400.css';
+import '@fontsource/merriweather/700.css';
+import '@fontsource/jetbrains-mono/400.css';
+import '@fontsource/jetbrains-mono/500.css';
+import './globals.css';
+
+export const metadata: Metadata = {
+  title: {
+    default: 'Digital Library | Professional Studies Department — Dispur College',
+    template: '%s | Dispur College Digital Library',
+  },
+  description:
+    'Official departmental digital library of the Professional Studies Department, Dispur College, Assam, India. Browse, read online, and access academic PDFs and e-books.',
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en">
+      <body className="min-h-screen flex flex-col bg-ivory-100 text-navy-900">
+        {children}
+      </body>
+    </html>
+  );
+}
+
