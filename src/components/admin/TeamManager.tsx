@@ -150,7 +150,7 @@ export function TeamManager({
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-slate-300">
           Only authorized administrators listed here can sign in and manage departmental resources.
         </p>
         {isSuperAdmin && (
@@ -160,17 +160,17 @@ export function TeamManager({
               setErrorMsg(null);
               setModalOpen(true);
             }}
-            className="btn-primary"
+            className="glass-btn-primary"
           >
-            <UserPlus className="h-4 w-4 text-gold-300" />
+            <UserPlus className="h-4 w-4 text-amethyst-300" />
             Add Administrator
           </button>
         )}
       </div>
 
       {!isSuperAdmin && (
-        <div className="flex items-start gap-2.5 rounded-xl border border-gold-300 bg-gold-100/50 p-4 text-xs text-navy-900">
-          <Shield className="h-4 w-4 text-gold-700 shrink-0 mt-0.5" />
+        <div className="flex items-start gap-2.5 rounded-2xl border border-rose-300/30 bg-burgundy-800/30 p-4 text-xs text-rose-100 backdrop-blur-xl">
+          <Shield className="h-4 w-4 text-rose-300 shrink-0 mt-0.5" />
           <span>
             You are signed in as <strong>{ROLE_LABELS[currentRole]}</strong>. Only the Primary Admin (Super Admin) can authorize, suspend, or remove other administrator accounts.
           </span>
@@ -178,8 +178,8 @@ export function TeamManager({
       )}
 
       {successMsg && (
-        <div className="flex items-start gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
-          <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+        <div className="flex items-start gap-2.5 rounded-2xl border border-emerald-400/35 bg-emerald-500/15 p-4 text-sm text-emerald-200 backdrop-blur-xl">
+          <CheckCircle2 className="h-5 w-5 text-emerald-300 shrink-0 mt-0.5" />
           <span>{successMsg}</span>
         </div>
       )}
@@ -187,40 +187,40 @@ export function TeamManager({
       {errorMsg && !modalOpen && (
         <div
           role="alert"
-          className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"
+          className="flex items-start gap-2.5 rounded-2xl border border-rose-400/35 bg-rose-500/15 p-4 text-sm text-rose-200 backdrop-blur-xl"
         >
-          <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+          <AlertCircle className="h-5 w-5 text-rose-300 shrink-0 mt-0.5" />
           <span>{errorMsg}</span>
         </div>
       )}
 
       {/* Role Legend */}
-      <div className="grid gap-3 sm:grid-cols-3">
-        <div className="academic-card p-4">
-          <p className="text-xs font-bold text-navy-900">Primary Admin</p>
-          <p className="mt-1 text-xs text-slate-600">
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className="liquid-glass p-4">
+          <p className="text-xs font-bold text-white">Primary Admin</p>
+          <p className="mt-1 text-xs text-slate-300 leading-relaxed">
             Full access including adding/removing other administrators, books, and categories.
           </p>
         </div>
-        <div className="academic-card p-4">
-          <p className="text-xs font-bold text-navy-900">Department Admin</p>
-          <p className="mt-1 text-xs text-slate-600">
+        <div className="liquid-glass p-4">
+          <p className="text-xs font-bold text-white">Department Admin</p>
+          <p className="mt-1 text-xs text-slate-300 leading-relaxed">
             Can upload, edit, replace files, delete books, control download permissions, and manage categories.
           </p>
         </div>
-        <div className="academic-card p-4">
-          <p className="text-xs font-bold text-navy-900">Library Curator</p>
-          <p className="mt-1 text-xs text-slate-600">
+        <div className="liquid-glass p-4">
+          <p className="text-xs font-bold text-white">Library Curator</p>
+          <p className="mt-1 text-xs text-slate-300 leading-relaxed">
             Can upload and edit books and categories; cannot permanently delete library books or manage admins.
           </p>
         </div>
       </div>
 
       {/* Admins Table */}
-      <div className="academic-card overflow-hidden">
+      <div className="liquid-glass overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-parchment-300 bg-parchment-100/80 text-[11px] font-semibold uppercase tracking-wider text-slate-600">
+            <thead className="border-b border-white/[0.09] bg-white/[0.03] text-[11px] font-semibold uppercase tracking-wider text-slate-300">
               <tr>
                 <th className="px-4 py-3.5">Administrator</th>
                 <th className="px-4 py-3.5">Role</th>
@@ -229,24 +229,24 @@ export function TeamManager({
                 {isSuperAdmin && <th className="px-4 py-3.5 text-right">Actions</th>}
               </tr>
             </thead>
-            <tbody className="divide-y divide-parchment-200">
+            <tbody className="divide-y divide-white/[0.08]">
               {admins.map((member) => {
                 const isSelf = member.id === currentAdminId;
                 const isTargetSuper = member.role === 'super_admin';
                 const isBusy = busyId === member.id;
 
                 return (
-                  <tr key={member.id} className="hover:bg-ivory-200/60">
+                  <tr key={member.id} className="hover:bg-white/[0.04] transition-colors">
                     <td className="px-4 py-3.5">
-                      <p className="font-semibold text-navy-900">
+                      <p className="font-semibold text-white">
                         {member.name}{' '}
                         {isSelf && (
-                          <span className="ml-1 rounded bg-navy-100 px-1.5 py-0.5 text-[10px] font-semibold text-navy-800">
+                          <span className="ml-1 rounded-full border border-blue-400/30 bg-blue-500/20 px-2 py-0.5 text-[10px] font-semibold text-blue-200">
                             You
                           </span>
                         )}
                       </p>
-                      <p className="text-xs text-slate-500">{member.email}</p>
+                      <p className="text-xs text-slate-400">{member.email}</p>
                     </td>
 
                     <td className="px-4 py-3.5">
@@ -260,13 +260,13 @@ export function TeamManager({
                               e.target.value as 'admin' | 'editor'
                             )
                           }
-                          className="rounded-lg border border-parchment-400 bg-white px-2.5 py-1 text-xs font-semibold text-navy-900"
+                          className="liquid-input w-auto py-1.5 px-3 text-xs font-semibold"
                         >
                           <option value="admin">Department Admin</option>
                           <option value="editor">Library Curator</option>
                         </select>
                       ) : (
-                        <span className="inline-flex rounded-full bg-navy-900 px-2.5 py-0.5 text-[11px] font-semibold text-gold-300">
+                        <span className="inline-flex rounded-full border border-rose-300/30 bg-burgundy-800/40 px-2.5 py-0.5 text-[11px] font-semibold text-rose-200">
                           {ROLE_LABELS[member.role]}
                         </span>
                       )}
@@ -274,17 +274,17 @@ export function TeamManager({
 
                     <td className="px-4 py-3.5">
                       <span
-                        className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                        className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-semibold ${
                           member.is_active
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : 'bg-red-100 text-red-700'
+                            ? 'border-emerald-400/30 bg-emerald-500/20 text-emerald-200'
+                            : 'border-rose-400/30 bg-rose-500/20 text-rose-200'
                         }`}
                       >
                         {member.is_active ? 'Active' : 'Suspended'}
                       </span>
                     </td>
 
-                    <td className="px-4 py-3.5 font-mono text-xs text-slate-500">
+                    <td className="px-4 py-3.5 font-mono text-xs text-slate-400">
                       {new Date(member.created_at).toLocaleDateString('en-IN', {
                         day: '2-digit',
                         month: 'short',
@@ -300,7 +300,7 @@ export function TeamManager({
                               type="button"
                               disabled={isBusy}
                               onClick={() => handleToggleActive(member)}
-                              className="rounded-lg border border-parchment-300 bg-white px-2.5 py-1 text-xs font-semibold text-navy-900 hover:bg-parchment-100"
+                              className="glass-btn px-3 py-1 text-xs"
                             >
                               {member.is_active ? 'Suspend' : 'Activate'}
                             </button>
@@ -308,7 +308,7 @@ export function TeamManager({
                               type="button"
                               disabled={isBusy}
                               onClick={() => handleRemoveAdmin(member)}
-                              className="rounded-lg border border-red-200 bg-white p-1.5 text-red-700 hover:bg-red-50"
+                              className="glass-btn-danger p-1.5 text-xs"
                               title="Remove administrator"
                             >
                               {isBusy ? (
@@ -331,32 +331,32 @@ export function TeamManager({
         </div>
       </div>
 
-      {/* Add Administrator Modal */}
+      {/* Add Administrator Liquid Glass Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy-950/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl border border-parchment-300 bg-white p-6 shadow-2xl">
-            <div className="mb-4 flex items-center justify-between border-b border-parchment-200 pb-3">
-              <h3 className="font-serif text-lg font-bold text-navy-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-abyss-950/75 p-4 backdrop-blur-md">
+          <div className="liquid-panel w-full max-w-lg p-6">
+            <div className="mb-4 flex items-center justify-between border-b border-white/[0.1] pb-3">
+              <h3 className="font-serif text-lg font-bold text-white">
                 Authorize New Administrator
               </h3>
               <button
                 type="button"
                 onClick={() => setModalOpen(false)}
-                className="rounded p-1 text-slate-500 hover:bg-parchment-100"
+                className="rounded-full p-1 text-slate-400 hover:bg-white/[0.1] hover:text-white"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             {errorMsg && (
-              <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800">
+              <div className="mb-4 rounded-2xl border border-rose-400/35 bg-rose-500/15 p-3 text-xs text-rose-200">
                 {errorMsg}
               </div>
             )}
 
             <form onSubmit={handleCreateAdmin} className="space-y-4">
               <div>
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-navy-800">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-300">
                   Full Name *
                 </label>
                 <input
@@ -365,12 +365,12 @@ export function TeamManager({
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Prof. R. Kalita"
-                  className="input-academic"
+                  className="liquid-input"
                 />
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-navy-800">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-300">
                   Email Address *
                 </label>
                 <input
@@ -379,18 +379,18 @@ export function TeamManager({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="faculty@dispurcollege.ac.in"
-                  className="input-academic"
+                  className="liquid-input"
                 />
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-navy-800">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-300">
                   Role *
                 </label>
                 <select
                   value={role}
                   onChange={(e) => setRole(e.target.value as 'admin' | 'editor')}
-                  className="input-academic"
+                  className="liquid-input"
                 >
                   <option value="admin">
                     Department Admin (Full library &amp; deletion rights)
@@ -402,17 +402,17 @@ export function TeamManager({
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-navy-800">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-300">
                   Onboarding Method
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setMode('password')}
-                    className={`rounded-lg border px-3 py-2 text-xs font-semibold transition-colors ${
+                    className={`rounded-full border px-3 py-2 text-xs font-semibold transition-all duration-200 ${
                       mode === 'password'
-                        ? 'border-navy-900 bg-navy-900 text-white'
-                        : 'border-parchment-300 bg-white text-navy-900'
+                        ? 'border-white/35 bg-gradient-to-r from-blue-500/40 to-amethyst-600/40 text-white'
+                        : 'border-white/[0.14] bg-white/[0.05] text-slate-300 hover:bg-white/[0.1]'
                     }`}
                   >
                     Set Temporary Password
@@ -420,10 +420,10 @@ export function TeamManager({
                   <button
                     type="button"
                     onClick={() => setMode('invite')}
-                    className={`rounded-lg border px-3 py-2 text-xs font-semibold transition-colors ${
+                    className={`rounded-full border px-3 py-2 text-xs font-semibold transition-all duration-200 ${
                       mode === 'invite'
-                        ? 'border-navy-900 bg-navy-900 text-white'
-                        : 'border-parchment-300 bg-white text-navy-900'
+                        ? 'border-white/35 bg-gradient-to-r from-blue-500/40 to-amethyst-600/40 text-white'
+                        : 'border-white/[0.14] bg-white/[0.05] text-slate-300 hover:bg-white/[0.1]'
                     }`}
                   >
                     Send Email Invite
@@ -433,7 +433,7 @@ export function TeamManager({
 
               {mode === 'password' ? (
                 <div>
-                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-navy-800">
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-300">
                     Temporary Password (min 8 chars) *
                   </label>
                   <input
@@ -443,11 +443,11 @@ export function TeamManager({
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Minimum 8 characters"
-                    className="input-academic"
+                    className="liquid-input"
                   />
                 </div>
               ) : (
-                <p className="rounded-lg border border-parchment-300 bg-ivory-200 p-3 text-xs text-slate-600">
+                <p className="liquid-well p-3 text-xs text-slate-300">
                   Requires SMTP / Auth email delivery configured in Supabase Project Settings.
                 </p>
               )}
@@ -456,11 +456,11 @@ export function TeamManager({
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="btn-secondary"
+                  className="glass-btn"
                 >
                   Cancel
                 </button>
-                <button type="submit" disabled={saving} className="btn-primary">
+                <button type="submit" disabled={saving} className="glass-btn-primary">
                   {saving ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />

@@ -62,37 +62,37 @@ export function CatalogFilterBar({
     initialValues.sort !== 'newest';
 
   return (
-    <div className="academic-card p-4 sm:p-6 space-y-4">
+    <div className="liquid-glass p-4 sm:p-6 space-y-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-2xl">
-          <Search className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-amethyst-300/80" />
           <input
             type="search"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search by title, author, subject, or category..."
-            className="input-academic pl-10 pr-24"
+            className="liquid-input rounded-full pl-10 pr-24"
           />
           <button
             type="submit"
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-md bg-navy-900 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-navy-800 transition-colors"
+            className="glass-btn-primary absolute right-1.5 top-1/2 -translate-y-1/2 px-4 py-1.5 text-xs"
           >
             Search
           </button>
         </form>
 
         <div className="flex items-center justify-between gap-3 text-sm">
-          <p className="text-slate-600 font-medium">
-            Showing <span className="font-bold text-navy-900">{totalResults}</span>{' '}
+          <p className="text-slate-300 font-medium">
+            Showing <span className="font-bold text-white">{totalResults}</span>{' '}
             {totalResults === 1 ? 'resource' : 'resources'}
           </p>
           {hasActiveFilters && (
             <button
               type="button"
               onClick={handleReset}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-parchment-400 px-3 py-1.5 text-xs font-semibold text-navy-800 hover:bg-parchment-100 transition-colors"
+              className="glass-btn px-3.5 py-1.5 text-xs"
             >
-              <RotateCcw className="h-3.5 w-3.5" />
+              <RotateCcw className="h-3.5 w-3.5 text-rose-300" />
               Clear Filters
             </button>
           )}
@@ -100,16 +100,16 @@ export function CatalogFilterBar({
       </div>
 
       {/* Filters Row */}
-      <div className="grid grid-cols-1 gap-3 pt-2 border-t border-parchment-200 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-3 pt-3 border-t border-white/[0.09] sm:grid-cols-2 lg:grid-cols-5">
         <div>
-          <label className="mb-1 flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-            <Filter className="h-3 w-3" />
+          <label className="mb-1.5 flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-slate-300">
+            <Filter className="h-3 w-3 text-amethyst-300" />
             Category
           </label>
           <select
             value={initialValues.category}
             onChange={(e) => pushParams({ category: e.target.value })}
-            className="input-academic py-2 text-xs"
+            className="liquid-input py-2 text-xs"
           >
             <option value="all">All Categories</option>
             {categories.map((cat) => (
@@ -121,14 +121,14 @@ export function CatalogFilterBar({
         </div>
 
         <div>
-          <label className="mb-1 flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-            <SlidersHorizontal className="h-3 w-3" />
+          <label className="mb-1.5 flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-slate-300">
+            <SlidersHorizontal className="h-3 w-3 text-amethyst-300" />
             Subject
           </label>
           <select
             value={initialValues.subject}
             onChange={(e) => pushParams({ subject: e.target.value })}
-            className="input-academic py-2 text-xs"
+            className="liquid-input py-2 text-xs"
           >
             <option value="all">All Subjects</option>
             {subjects.map((subj) => (
@@ -140,7 +140,7 @@ export function CatalogFilterBar({
         </div>
 
         <div>
-          <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+          <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-slate-300">
             Format
           </label>
           <select
@@ -148,7 +148,7 @@ export function CatalogFilterBar({
             onChange={(e) =>
               pushParams({ format: e.target.value as 'all' | 'pdf' | 'epub' })
             }
-            className="input-academic py-2 text-xs"
+            className="liquid-input py-2 text-xs"
           >
             <option value="all">All Formats (PDF &amp; EPUB)</option>
             <option value="pdf">PDF Documents Only</option>
@@ -157,7 +157,7 @@ export function CatalogFilterBar({
         </div>
 
         <div>
-          <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+          <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-slate-300">
             Download Permission
           </label>
           <select
@@ -165,7 +165,7 @@ export function CatalogFilterBar({
             onChange={(e) =>
               pushParams({ downloadable: e.target.value as 'all' | 'true' })
             }
-            className="input-academic py-2 text-xs"
+            className="liquid-input py-2 text-xs"
           >
             <option value="all">All Books</option>
             <option value="true">Downloadable Only</option>
@@ -173,7 +173,7 @@ export function CatalogFilterBar({
         </div>
 
         <div>
-          <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+          <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-slate-300">
             Sort Order
           </label>
           <select
@@ -181,7 +181,7 @@ export function CatalogFilterBar({
             onChange={(e) =>
               pushParams({ sort: e.target.value as CatalogSortOption })
             }
-            className="input-academic py-2 text-xs"
+            className="liquid-input py-2 text-xs"
           >
             <option value="newest">Recently Uploaded</option>
             <option value="title_asc">Title (A – Z)</option>

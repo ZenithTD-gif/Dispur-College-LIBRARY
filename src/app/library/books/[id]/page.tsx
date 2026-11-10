@@ -59,15 +59,15 @@ export default async function BookDetailsPage({
     <div className="flex min-h-screen flex-col">
       <LibraryNavbar />
 
-      <main className="flex-1 bg-ivory-100">
-        {/* Breadcrumb */}
-        <div className="border-b border-parchment-300 bg-parchment-100/70">
-          <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 px-4 py-3 text-xs text-slate-600 sm:px-6 lg:px-8">
-            <Link href="/library" className="hover:text-navy-900">
+      <main className="flex-1">
+        {/* Glass Breadcrumb */}
+        <div className="border-b border-white/[0.08] bg-white/[0.025] backdrop-blur-md">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 px-4 py-3 text-xs text-slate-400 sm:px-6 lg:px-8">
+            <Link href="/library" className="hover:text-white transition-colors">
               Digital Library
             </Link>
             <span>/</span>
-            <Link href="/library/browse" className="hover:text-navy-900">
+            <Link href="/library/browse" className="hover:text-white transition-colors">
               Catalog
             </Link>
             {book.category && (
@@ -75,14 +75,14 @@ export default async function BookDetailsPage({
                 <span>/</span>
                 <Link
                   href={`/library/browse?category=${encodeURIComponent(book.category.slug)}`}
-                  className="hover:text-navy-900"
+                  className="hover:text-white transition-colors"
                 >
                   {book.category.category_name}
                 </Link>
               </>
             )}
             <span>/</span>
-            <span className="font-semibold text-navy-900 truncate max-w-xs sm:max-w-md">
+            <span className="font-semibold text-slate-100 truncate max-w-xs sm:max-w-md">
               {book.title}
             </span>
           </div>
@@ -91,17 +91,17 @@ export default async function BookDetailsPage({
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <Link
             href="/library/browse"
-            className="mb-6 inline-flex items-center gap-1.5 text-xs font-semibold text-navy-800 hover:text-gold-600 transition-colors"
+            className="glass-btn group mb-6 px-3.5 py-1.5 text-xs"
           >
-            <ArrowLeft className="h-3.5 w-3.5" />
+            <ArrowLeft className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-x-0.5" />
             Back to Catalog
           </Link>
 
-          <div className="academic-card overflow-hidden p-6 sm:p-8 lg:p-10">
+          <div className="liquid-glass overflow-hidden p-6 sm:p-8 lg:p-10">
             <div className="grid gap-8 lg:grid-cols-12">
               {/* Left Cover Column */}
               <div className="lg:col-span-4">
-                <div className="mx-auto max-w-[300px] overflow-hidden rounded-xl border border-parchment-300 shadow-academic aspect-[3/4]">
+                <div className="mx-auto max-w-[300px] overflow-hidden rounded-3xl border border-white/[0.16] shadow-academic aspect-[3/4]">
                   <BookCover
                     title={book.title}
                     author={book.author}
@@ -120,19 +120,19 @@ export default async function BookDetailsPage({
                     {book.category && (
                       <Link
                         href={`/library/browse?category=${encodeURIComponent(book.category.slug)}`}
-                        className="inline-flex items-center rounded-full bg-parchment-200 px-3 py-1 text-xs font-semibold text-navy-900 hover:bg-parchment-300 transition-colors"
+                        className="glass-pill hover:border-white/30 hover:bg-white/[0.12] hover:text-white"
                       >
                         {book.category.category_name}
                       </Link>
                     )}
-                    <span className="inline-flex items-center rounded-full bg-navy-50 px-3 py-1 text-xs font-semibold text-navy-800">
+                    <span className="inline-flex items-center rounded-full border border-blue-400/25 bg-blue-500/15 px-3 py-1 text-xs font-semibold text-blue-200">
                       {book.subject}
                     </span>
-                    <span className="inline-flex items-center rounded-full bg-navy-900 px-2.5 py-1 font-mono text-[11px] font-semibold text-gold-300">
+                    <span className="inline-flex items-center rounded-full border border-white/20 bg-white/[0.08] px-3 py-1 font-mono text-[11px] font-semibold text-amethyst-300">
                       {formatLabel}
                     </span>
                     {book.is_featured && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-gold-100 px-2.5 py-1 text-xs font-semibold text-gold-700">
+                      <span className="inline-flex items-center gap-1 rounded-full border border-rose-300/30 bg-gradient-to-r from-burgundy-700/60 to-amethyst-600/60 px-3 py-1 text-xs font-semibold text-white">
                         <Sparkles className="h-3 w-3" />
                         Featured
                       </span>
@@ -140,86 +140,86 @@ export default async function BookDetailsPage({
                   </div>
 
                   <div>
-                    <h1 className="font-serif text-2xl font-bold leading-snug text-navy-900 sm:text-3xl lg:text-4xl">
+                    <h1 className="font-serif text-2xl font-bold leading-snug text-white sm:text-3xl lg:text-4xl">
                       {book.title}
                     </h1>
-                    <p className="mt-2 text-base font-medium text-slate-700">
-                      By <span className="text-navy-900 font-semibold">{book.author}</span>
+                    <p className="mt-2 text-base font-medium text-slate-300">
+                      By <span className="text-white font-semibold">{book.author}</span>
                     </p>
                   </div>
 
-                  <div className="border-y border-parchment-200 py-5">
-                    <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  <div className="border-y border-white/[0.1] py-5">
+                    <h2 className="mb-2 text-xs font-semibold uppercase tracking-widest text-amethyst-300">
                       Synopsis &amp; Overview
                     </h2>
-                    <p className="whitespace-pre-line text-sm leading-relaxed text-slate-700 sm:text-base">
+                    <p className="whitespace-pre-line text-sm leading-relaxed text-slate-200/90 sm:text-base">
                       {book.description}
                     </p>
                   </div>
 
-                  {/* Metadata Grid */}
-                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-                    <div className="rounded-lg border border-parchment-200 bg-ivory-200/60 p-3">
-                      <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                        <FileType className="h-3.5 w-3.5 text-gold-600" />
+                  {/* Metadata Glass Well Grid */}
+                  <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3">
+                    <div className="liquid-well p-3.5">
+                      <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                        <FileType className="h-3.5 w-3.5 text-amethyst-300" />
                         Format
                       </p>
-                      <p className="mt-1 font-mono text-sm font-semibold text-navy-900">
+                      <p className="mt-1 font-mono text-sm font-semibold text-white">
                         {formatLabel}
                       </p>
                     </div>
 
-                    <div className="rounded-lg border border-parchment-200 bg-ivory-200/60 p-3">
-                      <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                        <HardDrive className="h-3.5 w-3.5 text-gold-600" />
+                    <div className="liquid-well p-3.5">
+                      <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                        <HardDrive className="h-3.5 w-3.5 text-amethyst-300" />
                         File Size
                       </p>
-                      <p className="mt-1 font-mono text-sm font-semibold text-navy-900">
+                      <p className="mt-1 font-mono text-sm font-semibold text-white">
                         {formatFileSize(book.file_size)}
                       </p>
                     </div>
 
-                    <div className="rounded-lg border border-parchment-200 bg-ivory-200/60 p-3">
-                      <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                        <Globe className="h-3.5 w-3.5 text-gold-600" />
+                    <div className="liquid-well p-3.5">
+                      <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                        <Globe className="h-3.5 w-3.5 text-amethyst-300" />
                         Language
                       </p>
-                      <p className="mt-1 text-sm font-semibold text-navy-900">
+                      <p className="mt-1 text-sm font-semibold text-white">
                         {book.language || 'English'}
                       </p>
                     </div>
 
                     {book.publisher && (
-                      <div className="rounded-lg border border-parchment-200 bg-ivory-200/60 p-3">
-                        <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                          <Building2 className="h-3.5 w-3.5 text-gold-600" />
+                      <div className="liquid-well p-3.5">
+                        <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                          <Building2 className="h-3.5 w-3.5 text-rose-300" />
                           Publisher
                         </p>
-                        <p className="mt-1 text-sm font-semibold text-navy-900">
+                        <p className="mt-1 text-sm font-semibold text-white">
                           {book.publisher}
                         </p>
                       </div>
                     )}
 
                     {book.publication_year && (
-                      <div className="rounded-lg border border-parchment-200 bg-ivory-200/60 p-3">
-                        <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                          <Calendar className="h-3.5 w-3.5 text-gold-600" />
+                      <div className="liquid-well p-3.5">
+                        <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                          <Calendar className="h-3.5 w-3.5 text-rose-300" />
                           Published
                         </p>
-                        <p className="mt-1 font-mono text-sm font-semibold text-navy-900">
+                        <p className="mt-1 font-mono text-sm font-semibold text-white">
                           {book.publication_year}
                         </p>
                       </div>
                     )}
 
                     {book.isbn && (
-                      <div className="rounded-lg border border-parchment-200 bg-ivory-200/60 p-3">
-                        <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                          <Hash className="h-3.5 w-3.5 text-gold-600" />
+                      <div className="liquid-well p-3.5">
+                        <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                          <Hash className="h-3.5 w-3.5 text-rose-300" />
                           ISBN
                         </p>
-                        <p className="mt-1 font-mono text-sm font-semibold text-navy-900">
+                        <p className="mt-1 font-mono text-sm font-semibold text-white">
                           {book.isbn}
                         </p>
                       </div>
@@ -227,28 +227,28 @@ export default async function BookDetailsPage({
                   </div>
                 </div>
 
-                {/* Action Bar */}
+                {/* Transparent Glass Action Bar */}
                 <div className="space-y-3 pt-2">
                   <div className="flex flex-wrap items-center gap-3">
                     <Link
                       href={`/library/books/${book.id}/read`}
-                      className="btn-primary px-6 py-3 text-sm sm:text-base"
+                      className="glass-btn-primary px-6 py-3 text-sm sm:text-base"
                     >
-                      <BookOpen className="h-4 w-4 text-gold-300" />
+                      <BookOpen className="h-4 w-4 text-amethyst-300" />
                       Read Online
                     </Link>
 
                     {book.allow_download ? (
                       <a
                         href={`/api/books/${book.id}/download`}
-                        className="btn-gold px-6 py-3 text-sm sm:text-base"
+                        className="glass-btn-accent px-6 py-3 text-sm sm:text-base"
                       >
                         <Download className="h-4 w-4" />
                         Download {formatLabel}
                       </a>
                     ) : (
-                      <div className="inline-flex items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2.5 text-xs font-medium text-amber-800">
-                        <Lock className="h-4 w-4 shrink-0" />
+                      <div className="inline-flex items-center gap-2 rounded-full border border-rose-400/30 bg-burgundy-800/30 px-4 py-2.5 text-xs font-medium text-rose-200 backdrop-blur-xl">
+                        <Lock className="h-4 w-4 shrink-0 text-rose-300" />
                         <span>
                           Online reading only — downloading is disabled for this title.
                         </span>
@@ -263,7 +263,7 @@ export default async function BookDetailsPage({
           {/* Related Books */}
           {relatedBooks.length > 0 && (
             <section className="mt-12">
-              <h2 className="mb-5 font-serif text-xl font-bold text-navy-900">
+              <h2 className="mb-5 font-serif text-xl font-bold text-white">
                 More in {book.category?.category_name || 'This Category'}
               </h2>
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">

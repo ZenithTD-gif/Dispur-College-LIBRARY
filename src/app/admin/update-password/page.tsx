@@ -117,68 +117,71 @@ export default function UpdateAdminPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col justify-between bg-navy-950 px-4 py-10 sm:px-6">
-      <div className="mx-auto w-full max-w-md">
+    <div className="relative flex min-h-screen flex-col justify-between overflow-hidden px-4 py-10 sm:px-6">
+      <div className="pointer-events-none absolute -top-28 left-1/4 h-96 w-96 rounded-full bg-blue-600/20 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 right-1/4 h-80 w-80 rounded-full bg-burgundy-700/20 blur-3xl" />
+
+      <div className="relative mx-auto w-full max-w-md">
         <Link
           href={hasSession ? '/admin' : '/admin/login'}
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-ivory-200/80 hover:text-white transition-colors"
+          className="glass-btn group px-3.5 py-1.5 text-xs"
         >
-          <ArrowLeft className="h-3.5 w-3.5" />
+          <ArrowLeft className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-x-0.5" />
           {hasSession ? 'Back to Admin Dashboard' : 'Back to Admin Sign-In'}
         </Link>
       </div>
 
-      <div className="mx-auto w-full max-w-md space-y-6 my-8">
-        <div className="text-center space-y-2">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-gold-500 text-white shadow-lg">
-            <BookMarked className="h-6 w-6" />
+      <div className="relative mx-auto w-full max-w-md space-y-6 my-8">
+        <div className="text-center space-y-2.5">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-white/25 bg-gradient-to-br from-blue-500/35 via-amethyst-500/30 to-burgundy-700/40 text-white shadow-[0_12px_28px_-6px_rgba(99,102,241,0.5),inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-xl">
+            <BookMarked className="h-6 w-6 text-amethyst-300" />
           </div>
-          <h1 className="font-serif text-2xl font-bold text-white">
+          <h1 className="font-serif text-2xl font-bold text-white sm:text-3xl">
             Set Administrator Password
           </h1>
-          <p className="text-xs text-ivory-200/75">
+          <p className="text-xs text-slate-300">
             Complete your invitation or password reset for Dispur College Digital Library
           </p>
         </div>
 
-        <div className="rounded-2xl border border-parchment-300 bg-ivory-50 p-6 shadow-2xl sm:p-8">
+        <div className="liquid-glass p-6 sm:p-8">
           {checkingSession ? (
-            <div className="flex flex-col items-center justify-center py-8 gap-2 text-xs text-slate-600">
-              <Loader2 className="h-5 w-5 animate-spin text-navy-900" />
+            <div className="flex flex-col items-center justify-center py-8 gap-2 text-xs text-slate-300">
+              <Loader2 className="h-5 w-5 animate-spin text-amethyst-400" />
               Verifying administrator session...
             </div>
           ) : !hasSession ? (
             <div className="space-y-4 text-center">
-              <AlertCircle className="mx-auto h-8 w-8 text-amber-600" />
-              <p className="text-sm font-semibold text-navy-900">
+              <AlertCircle className="mx-auto h-8 w-8 text-rose-300" />
+              <p className="text-sm font-semibold text-white">
                 Verification Link Required or Expired
               </p>
-              <p className="text-xs text-slate-600 leading-relaxed">
+              <p className="text-xs text-slate-300 leading-relaxed">
                 Open this page from a valid administrator invitation or password
                 reset email link, or request a new reset link on the login page.
               </p>
-              <Link href="/admin/login" className="btn-primary w-full">
+              <Link href="/admin/login" className="glass-btn-primary w-full">
                 Go to Admin Sign-In
               </Link>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               {errorMsg && (
-                <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800">
-                  <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-red-600" />
+                <div className="flex items-start gap-2 rounded-2xl border border-rose-400/35 bg-rose-500/15 p-3 text-xs text-rose-200">
+                  <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-rose-300" />
                   <span>{errorMsg}</span>
                 </div>
               )}
 
               {successMsg && (
-                <div className="flex items-start gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800">
-                  <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5 text-emerald-600" />
+                <div className="flex items-start gap-2 rounded-2xl border border-emerald-400/35 bg-emerald-500/15 p-3 text-xs text-emerald-200">
+                  <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5 text-emerald-300" />
                   <span>{successMsg}</span>
                 </div>
               )}
 
               <div>
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-navy-800">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-300">
                   New Password (min 8 chars)
                 </label>
                 <div className="relative">
@@ -190,13 +193,13 @@ export default function UpdateAdminPasswordPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter new password"
-                    className="input-academic pl-10"
+                    className="liquid-input pl-10"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-navy-800">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-300">
                   Confirm New Password
                 </label>
                 <div className="relative">
@@ -208,7 +211,7 @@ export default function UpdateAdminPasswordPage() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Re-enter password"
-                    className="input-academic pl-10"
+                    className="liquid-input pl-10"
                   />
                 </div>
               </div>
@@ -216,7 +219,7 @@ export default function UpdateAdminPasswordPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="btn-primary w-full py-3"
+                className="glass-btn-primary w-full py-3"
               >
                 {submitting ? (
                   <>
@@ -232,7 +235,7 @@ export default function UpdateAdminPasswordPage() {
         </div>
       </div>
 
-      <p className="text-center text-xs text-ivory-200/50">
+      <p className="relative text-center text-xs text-slate-400">
         Professional Studies Department • Dispur College
       </p>
     </div>

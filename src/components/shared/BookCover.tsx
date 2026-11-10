@@ -27,48 +27,51 @@ export function BookCover({
   if (coverUrl && !imgFailed) {
     return (
       <div
-        className={`relative overflow-hidden bg-parchment-200 ${className}`}
+        className={`relative overflow-hidden bg-abyss-900/80 ${className}`}
       >
         <img
           src={coverUrl}
           alt={`Cover of ${title}`}
-          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+          className="h-full w-full object-cover transition-transform duration-500 ease-liquid group-hover:scale-[1.04]"
           onError={() => setImgFailed(true)}
           loading="lazy"
         />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-abyss-950/60 via-transparent to-white/[0.06]" />
       </div>
     );
   }
 
   return (
     <div
-      className={`relative flex flex-col justify-between overflow-hidden bg-gradient-to-br from-navy-900 via-navy-800 to-navy-950 p-4 text-ivory-100 select-none ${className}`}
+      className={`relative flex flex-col justify-between overflow-hidden bg-gradient-to-br from-abyss-800 via-[#111E45] to-[#26091E] p-4 text-slate-100 select-none ${className}`}
     >
-      {/* Subtle academic spine accent */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-2.5 bg-gradient-to-r from-gold-500/80 to-gold-400/20" />
-      <div className="pointer-events-none absolute inset-2 border border-gold-400/25 rounded" />
+      {/* Subtle Liquid Glass spine & specular refraction */}
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-2.5 bg-gradient-to-b from-blue-400/50 via-amethyst-500/45 to-burgundy-600/60" />
+      <div className="pointer-events-none absolute -top-10 -right-10 h-28 w-28 rounded-full bg-amethyst-500/20 blur-2xl" />
+      <div className="pointer-events-none absolute -bottom-10 left-4 h-24 w-24 rounded-full bg-burgundy-600/20 blur-2xl" />
+      <div className="pointer-events-none absolute inset-2.5 rounded-xl border border-white/[0.12] bg-white/[0.02]" />
 
       <div className="relative z-10 flex items-center justify-between gap-2 pl-2">
-        <span className="inline-flex items-center gap-1 rounded bg-white/10 px-2 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-wider text-gold-300">
+        <span className="inline-flex items-center gap-1 rounded-full border border-white/20 bg-white/10 px-2.5 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-wider text-blue-200 backdrop-blur-md">
           {fileType}
         </span>
-        <BookOpen className="h-4 w-4 text-gold-400/70 shrink-0" />
+        <BookOpen className="h-4 w-4 text-amethyst-300/80 shrink-0" />
       </div>
 
       <div className="relative z-10 my-auto pl-2 pr-1 py-2">
         {subject && (
-          <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-gold-300/90 line-clamp-1">
+          <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-rose-300/90 line-clamp-1">
             {subject}
           </p>
         )}
-        <h4 className="font-serif text-sm font-bold leading-snug text-ivory-50 line-clamp-4">
+        <h4 className="font-serif text-sm font-bold leading-snug text-white line-clamp-4">
           {title}
         </h4>
       </div>
 
-      <div className="relative z-10 border-t border-white/10 pt-2 pl-2">
-        <p className="text-[11px] text-ivory-200/80 line-clamp-1">{author}</p>
-        <p className="mt-0.5 text-[9px] uppercase tracking-wider text-gold-300/70">
+      <div className="relative z-10 border-t border-white/15 pt-2 pl-2">
+        <p className="text-[11px] text-slate-200/90 line-clamp-1">{author}</p>
+        <p className="mt-0.5 text-[9px] uppercase tracking-wider text-amethyst-300/80">
           Dispur College
         </p>
       </div>

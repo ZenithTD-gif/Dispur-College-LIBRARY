@@ -1,7 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-  <rect width="64" height="64" rx="14" fill="#0F213B"/>
-  <rect x="4" y="4" width="56" height="56" rx="11" stroke="#C6A45C" stroke-opacity="0.45" stroke-width="1.5"/>
-  <path d="M18 19.5C18 17.567 19.567 16 21.5 16H30C31.105 16 32 16.895 32 18V47C32 45.895 31.105 45 30 45H21.5C19.567 45 18 46.567 18 48.5V19.5Z" stroke="#C6A45C" stroke-width="2.6" stroke-linejoin="round"/>
-  <path d="M46 19.5C46 17.567 44.433 16 42.5 16H34C32.895 16 32 16.895 32 18V47C32 45.895 32.895 45 34 45H42.5C44.433 45 46 46.567 46 48.5V19.5Z" stroke="#FCFBF8" stroke-width="2.6" stroke-linejoin="round"/>
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#071128"/>
+      <stop offset="55%" stop-color="#121F4B"/>
+      <stop offset="100%" stop-color="#3B0B24"/>
+    </linearGradient>
+    <linearGradient id="rimGrad" x1="4" y1="4" x2="60" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.45"/>
+      <stop offset="50%" stop-color="#A78BFA" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#FB7185" stop-opacity="0.3"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#bgGrad)"/>
+  <rect x="3" y="3" width="58" height="58" rx="13" stroke="url(#rimGrad)" stroke-width="1.5"/>
+  <path d="M18 19.5C18 17.567 19.567 16 21.5 16H30C31.105 16 32 16.895 32 18V47C32 45.895 31.105 45 30 45H21.5C19.567 45 18 46.567 18 48.5V19.5Z" stroke="#C4B5FD" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M46 19.5C46 17.567 44.433 16 42.5 16H34C32.895 16 32 16.895 32 18V47C32 45.895 32.895 45 34 45H42.5C44.433 45 46 46.567 46 48.5V19.5Z" stroke="#F8FAFC" stroke-width="2.5" stroke-linejoin="round"/>
 </svg>
 

@@ -13,10 +13,10 @@ export default async function AdminCategoriesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-serif text-2xl font-bold text-navy-900 sm:text-3xl">
+        <h1 className="font-serif text-2xl font-bold text-white sm:text-3xl">
           Manage Categories
         </h1>
-        <p className="mt-1 text-sm text-slate-600">
+        <p className="mt-1 text-sm text-slate-300">
           Create, edit, or organize subject categories displayed across the Student Portal.
         </p>
       </div>

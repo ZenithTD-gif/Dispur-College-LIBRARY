@@ -65,16 +65,18 @@ export default async function BrowseLibraryPage({
     <div className="flex min-h-screen flex-col">
       <LibraryNavbar />
 
-      <main className="flex-1 bg-ivory-100">
-        <div className="border-b border-parchment-300 bg-navy-900 py-10 text-white">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <p className="text-xs font-semibold uppercase tracking-wider text-gold-300">
+      <main className="flex-1">
+        <div className="relative overflow-hidden border-b border-white/[0.09] bg-abyss-900/50 py-10 backdrop-blur-xl">
+          <div className="pointer-events-none absolute -top-20 right-12 h-56 w-56 rounded-full bg-amethyst-600/20 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-24 left-12 h-56 w-56 rounded-full bg-burgundy-700/20 blur-3xl" />
+          <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <p className="text-xs font-semibold uppercase tracking-widest text-rose-300">
               Professional Studies Department • Dispur College
             </p>
-            <h1 className="mt-1 font-serif text-2xl font-bold sm:text-3xl">
+            <h1 className="mt-1.5 font-serif text-2xl font-bold text-white sm:text-3xl">
               Digital Book Catalog
             </h1>
-            <p className="mt-2 max-w-2xl text-sm text-ivory-200/80">
+            <p className="mt-2 max-w-2xl text-sm text-slate-300">
               Search and filter departmental books, reference textbooks, PDFs, and
               EPUB study materials.
             </p>
@@ -99,26 +101,24 @@ export default async function BrowseLibraryPage({
                 ))}
               </div>
 
-              {/* Pagination */}
+              {/* Liquid Glass Pagination */}
               {catalog.totalPages > 1 && (
                 <nav
                   aria-label="Catalog pagination"
-                  className="flex items-center justify-between border-t border-parchment-300 pt-6"
+                  className="flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.09] pt-6"
                 >
                   <Link
                     href={pageHref(Math.max(1, catalog.page - 1))}
                     aria-disabled={catalog.page <= 1}
-                    className={`inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-2 text-xs font-semibold transition-colors ${
-                      catalog.page <= 1
-                        ? 'pointer-events-none border-parchment-300 bg-white/60 text-slate-400'
-                        : 'border-parchment-400 bg-white text-navy-900 hover:bg-parchment-100'
+                    className={`glass-btn px-4 py-2 text-xs ${
+                      catalog.page <= 1 ? 'pointer-events-none opacity-40' : ''
                     }`}
                   >
                     <ChevronLeft className="h-4 w-4" />
                     Previous
                   </Link>
 
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 rounded-full border border-white/[0.12] bg-white/[0.04] p-1 backdrop-blur-xl">
                     {Array.from({ length: catalog.totalPages }, (_, i) => i + 1)
                       .filter(
                         (p) =>
@@ -130,10 +130,10 @@ export default async function BrowseLibraryPage({
                         <Link
                           key={p}
                           href={pageHref(p)}
-                          className={`inline-flex h-8 w-8 items-center justify-center rounded-lg text-xs font-semibold transition-colors ${
+                          className={`inline-flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all duration-200 ${
                             p === catalog.page
-                              ? 'bg-navy-900 text-white'
-                              : 'border border-parchment-300 bg-white text-navy-900 hover:bg-parchment-100'
+                              ? 'border border-white/30 bg-gradient-to-r from-blue-500/40 to-amethyst-600/40 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]'
+                              : 'text-slate-300 hover:bg-white/[0.1] hover:text-white'
                           }`}
                         >
                           {p}
@@ -144,10 +144,10 @@ export default async function BrowseLibraryPage({
                   <Link
                     href={pageHref(Math.min(catalog.totalPages, catalog.page + 1))}
                     aria-disabled={catalog.page >= catalog.totalPages}
-                    className={`inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-2 text-xs font-semibold transition-colors ${
+                    className={`glass-btn px-4 py-2 text-xs ${
                       catalog.page >= catalog.totalPages
-                        ? 'pointer-events-none border-parchment-300 bg-white/60 text-slate-400'
-                        : 'border-parchment-400 bg-white text-navy-900 hover:bg-parchment-100'
+                        ? 'pointer-events-none opacity-40'
+                        : ''
                     }`}
                   >
                     Next
@@ -157,18 +157,22 @@ export default async function BrowseLibraryPage({
               )}
             </>
           ) : (
-            <div className="academic-card p-12 text-center space-y-3">
-              <BookOpen className="mx-auto h-10 w-10 text-gold-500/80" />
-              <h2 className="font-serif text-lg font-bold text-navy-900">
+            <div className="liquid-glass p-12 text-center space-y-3">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-white/15 bg-white/[0.06]">
+                <BookOpen className="h-6 w-6 text-amethyst-300" />
+              </div>
+              <h2 className="font-serif text-lg font-bold text-white">
                 No Matching Books Found
               </h2>
-              <p className="mx-auto max-w-md text-sm text-slate-600">
+              <p className="mx-auto max-w-md text-sm text-slate-300">
                 No books matched your current search or filter criteria. Try
                 clearing filters or searching with another title, author, or subject.
               </p>
-              <Link href="/library/browse" className="btn-secondary mt-2">
-                Reset All Filters
-              </Link>
+              <div className="pt-2">
+                <Link href="/library/browse" className="glass-btn">
+                  Reset All Filters
+                </Link>
+              </div>
             </div>
           )}
         </div>

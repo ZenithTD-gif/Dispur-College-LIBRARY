@@ -189,12 +189,12 @@ export function EpubReader({
   }, [nextPage, prevPage]);
 
   return (
-    <div ref={shellRef} className="flex h-screen flex-col bg-navy-950 text-ivory-100">
-      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 bg-navy-900 px-3 py-2.5 sm:px-5">
-        <div className="flex items-center gap-3 min-w-0">
+    <div ref={shellRef} className="flex h-screen flex-col bg-abyss-950 text-slate-100">
+      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.1] bg-abyss-900/75 px-3 py-2.5 backdrop-blur-2xl backdrop-saturate-150 sm:px-5">
+        <div className="flex items-center gap-2.5 min-w-0">
           <Link
             href={`/library/books/${bookId}`}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/5 px-2.5 py-1.5 text-xs font-medium text-ivory-100 hover:bg-white/10 shrink-0"
+            className="glass-btn px-3 py-1.5 text-xs shrink-0"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Back to Book</span>
@@ -202,51 +202,53 @@ export function EpubReader({
           <button
             type="button"
             onClick={() => setTocOpen((p) => !p)}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/5 px-2.5 py-1.5 text-xs font-medium text-ivory-100 hover:bg-white/10"
+            className="glass-btn px-3 py-1.5 text-xs shrink-0"
           >
-            <List className="h-3.5 w-3.5 text-gold-300" />
+            <List className="h-3.5 w-3.5 text-amethyst-300" />
             <span className="hidden sm:inline">Chapters</span>
           </button>
           <div className="min-w-0">
             <h1 className="truncate font-serif text-sm font-bold text-white sm:text-base">
               {title}
             </h1>
-            <p className="truncate text-[11px] text-ivory-200/70">
+            <p className="truncate text-[11px] text-slate-400">
               {author} {chapterLabel ? `• ${chapterLabel}` : ''}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Font & Theme */}
-          <div className="hidden md:flex items-center gap-1 rounded-lg bg-navy-950/70 px-2 py-1 border border-white/10">
+          {/* Font & Theme Glass Controls */}
+          <div className="hidden md:flex items-center gap-1 rounded-full border border-white/[0.14] bg-white/[0.06] px-2 py-1 backdrop-blur-xl">
             <button
               type="button"
               onClick={() => setFontSize((s) => Math.max(80, s - 10))}
-              className="rounded px-1.5 py-0.5 text-xs font-semibold hover:bg-white/10"
+              className="rounded-full px-2 py-0.5 text-xs font-semibold transition-colors hover:bg-white/[0.12]"
               title="Decrease text size"
             >
               A-
             </button>
-            <span className="font-mono text-[11px] px-1">{fontSize}%</span>
+            <span className="font-mono text-[11px] px-1 text-slate-200">{fontSize}%</span>
             <button
               type="button"
               onClick={() => setFontSize((s) => Math.min(160, s + 10))}
-              className="rounded px-1.5 py-0.5 text-xs font-semibold hover:bg-white/10"
+              className="rounded-full px-2 py-0.5 text-xs font-semibold transition-colors hover:bg-white/[0.12]"
               title="Increase text size"
             >
               A+
             </button>
           </div>
 
-          <div className="hidden sm:flex items-center gap-1 rounded-lg bg-navy-950/70 px-1.5 py-1 border border-white/10">
+          <div className="hidden sm:flex items-center gap-1 rounded-full border border-white/[0.14] bg-white/[0.06] px-1.5 py-1 backdrop-blur-xl">
             {(['light', 'sepia', 'night'] as ReaderTheme[]).map((t) => (
               <button
                 key={t}
                 type="button"
                 onClick={() => setTheme(t)}
-                className={`rounded px-2 py-0.5 text-[11px] capitalize font-medium transition-colors ${
-                  theme === t ? 'bg-gold-500 text-white' : 'text-ivory-200 hover:bg-white/10'
+                className={`rounded-full px-2.5 py-0.5 text-[11px] capitalize font-medium transition-all ${
+                  theme === t
+                    ? 'border border-white/25 bg-gradient-to-r from-blue-500/45 to-amethyst-600/45 text-white'
+                    : 'text-slate-300 hover:bg-white/[0.1]'
                 }`}
               >
                 {t}
@@ -257,7 +259,7 @@ export function EpubReader({
           <button
             type="button"
             onClick={toggleFullscreen}
-            className="rounded-lg border border-white/15 bg-white/5 p-2 text-ivory-100 hover:bg-white/10"
+            className="glass-btn p-2 text-xs"
             aria-label="Toggle fullscreen"
           >
             {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
@@ -266,13 +268,13 @@ export function EpubReader({
           {allowDownload ? (
             <a
               href={downloadUrl}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-gold-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-gold-600"
+              className="glass-btn-accent px-3.5 py-1.5 text-xs"
             >
               <Download className="h-3.5 w-3.5" />
               <span className="hidden md:inline">Download EPUB</span>
             </a>
           ) : (
-            <span className="inline-flex items-center gap-1 rounded-lg border border-amber-400/30 bg-amber-500/10 px-2.5 py-1.5 text-[11px] font-medium text-amber-200">
+            <span className="inline-flex items-center gap-1 rounded-full border border-rose-400/30 bg-burgundy-800/35 px-3 py-1.5 text-[11px] font-medium text-rose-200 backdrop-blur-xl">
               <Lock className="h-3.5 w-3.5" />
               <span className="hidden md:inline">Read Only</span>
             </span>
@@ -281,23 +283,23 @@ export function EpubReader({
       </header>
 
       <div className="relative flex min-h-0 flex-1 overflow-hidden">
-        {/* Chapters Drawer */}
+        {/* Frosted Glass Chapters Drawer */}
         {tocOpen && (
-          <aside className="z-20 w-72 shrink-0 overflow-y-auto border-r border-white/10 bg-navy-900 p-4">
+          <aside className="z-20 w-72 shrink-0 overflow-y-auto border-r border-white/[0.1] bg-abyss-900/85 p-4 backdrop-blur-2xl">
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-gold-300">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-amethyst-300">
                 Table of Contents
               </h2>
               <button
                 type="button"
                 onClick={() => setTocOpen(false)}
-                className="rounded p-1 hover:bg-white/10"
+                className="rounded-full p-1 text-slate-300 hover:bg-white/[0.1] hover:text-white"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
             {toc.length === 0 ? (
-              <p className="text-xs text-ivory-200/60">No chapter index found in EPUB.</p>
+              <p className="text-xs text-slate-400">No chapter index found in EPUB.</p>
             ) : (
               <ul className="space-y-1">
                 {toc.map((item) => (
@@ -308,7 +310,7 @@ export function EpubReader({
                         renditionRef.current?.display(item.href);
                         setTocOpen(false);
                       }}
-                      className="w-full rounded-lg px-2.5 py-2 text-left text-xs text-ivory-100 hover:bg-white/10 transition-colors"
+                      className="w-full rounded-xl px-3 py-2 text-left text-xs text-slate-200 transition-colors hover:bg-white/[0.1] hover:text-white"
                     >
                       {item.label}
                     </button>
@@ -328,16 +330,16 @@ export function EpubReader({
           }}
         >
           {loading && (
-            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-navy-950/90">
-              <Loader2 className="h-8 w-8 animate-spin text-gold-400" />
-              <p className="text-sm text-ivory-100">Opening EPUB e-book...</p>
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-abyss-950/90 backdrop-blur-md">
+              <Loader2 className="h-8 w-8 animate-spin text-amethyst-400" />
+              <p className="text-sm text-slate-100">Opening EPUB e-book...</p>
             </div>
           )}
 
           {error && !loading && (
-            <div className="max-w-md rounded-xl border border-red-400/30 bg-red-950/80 p-6 text-center text-red-100">
+            <div className="liquid-glass max-w-md border-rose-400/35 bg-burgundy-900/75 p-6 text-center text-rose-100">
               <p className="font-serif text-base font-bold">Could Not Open EPUB</p>
-              <p className="mt-2 text-xs text-red-200/80">{error}</p>
+              <p className="mt-2 text-xs text-rose-200/80">{error}</p>
             </div>
           )}
 
@@ -345,40 +347,40 @@ export function EpubReader({
             type="button"
             onClick={prevPage}
             aria-label="Previous section"
-            className="hidden sm:flex h-12 w-10 items-center justify-center rounded-lg bg-navy-900/15 text-navy-900 hover:bg-navy-900/25 mr-2 shrink-0"
+            className="hidden sm:flex h-12 w-10 items-center justify-center rounded-full border border-white/20 bg-abyss-950/60 text-slate-100 backdrop-blur-xl transition-all hover:bg-abyss-900/85 hover:scale-105 mr-2 shrink-0"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
 
           <div
             ref={viewerRef}
-            className="h-full w-full max-w-4xl overflow-hidden rounded-lg shadow-sm"
+            className="h-full w-full max-w-4xl overflow-hidden rounded-2xl shadow-lg"
           />
 
           <button
             type="button"
             onClick={nextPage}
             aria-label="Next section"
-            className="hidden sm:flex h-12 w-10 items-center justify-center rounded-lg bg-navy-900/15 text-navy-900 hover:bg-navy-900/25 ml-2 shrink-0"
+            className="hidden sm:flex h-12 w-10 items-center justify-center rounded-full border border-white/20 bg-abyss-950/60 text-slate-100 backdrop-blur-xl transition-all hover:bg-abyss-900/85 hover:scale-105 ml-2 shrink-0"
           >
             <ChevronRight className="h-5 w-5" />
           </button>
         </main>
       </div>
 
-      {/* Mobile Bottom Page Turn Bar */}
-      <div className="flex items-center justify-between border-t border-white/10 bg-navy-900 px-4 py-2 sm:hidden">
+      {/* Mobile Glass Bottom Page Turn Bar */}
+      <div className="flex items-center justify-between border-t border-white/[0.1] bg-abyss-900/80 px-4 py-2 backdrop-blur-2xl sm:hidden">
         <button
           type="button"
           onClick={prevPage}
-          className="inline-flex items-center gap-1 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-medium"
+          className="glass-btn px-3.5 py-1.5 text-xs"
         >
           <ChevronLeft className="h-4 w-4" /> Prev
         </button>
         <button
           type="button"
           onClick={nextPage}
-          className="inline-flex items-center gap-1 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-medium"
+          className="glass-btn px-3.5 py-1.5 text-xs"
         >
           Next <ChevronRight className="h-4 w-4" />
         </button>

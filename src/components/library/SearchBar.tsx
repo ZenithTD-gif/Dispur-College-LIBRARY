@@ -37,7 +37,7 @@ export function SearchBar({
       role="search"
     >
       <Search
-        className={`pointer-events-none absolute left-4 text-slate-400 ${
+        className={`pointer-events-none absolute left-4 z-10 text-amethyst-300/80 ${
           variant === 'hero' ? 'h-5 w-5' : 'h-4 w-4'
         }`}
       />
@@ -47,18 +47,16 @@ export function SearchBar({
         onChange={(e) => setQuery(e.target.value)}
         placeholder={placeholder}
         aria-label="Search departmental digital library"
-        className={`w-full rounded-xl border bg-white text-navy-900 placeholder:text-slate-400 shadow-academic transition-all focus:outline-none focus:ring-2 focus:ring-gold-400 ${
+        className={`w-full rounded-full border border-white/[0.18] bg-white/[0.07] text-white placeholder:text-slate-300/75 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_14px_40px_-10px_rgba(2,6,23,0.7),inset_0_1px_0_rgba(255,255,255,0.22)] transition-all duration-300 ease-liquid focus:border-amethyst-400/60 focus:bg-white/[0.11] focus:outline-none focus:ring-2 focus:ring-amethyst-500/30 ${
           variant === 'hero'
-            ? 'border-white/20 py-4 pl-12 pr-32 text-sm sm:text-base'
-            : 'border-parchment-400 py-2.5 pl-10 pr-24 text-sm shadow-sm'
+            ? 'py-4 pl-12 pr-32 text-sm sm:text-base'
+            : 'py-2.5 pl-10 pr-24 text-sm'
         }`}
       />
       <button
         type="submit"
-        className={`absolute right-2 rounded-lg font-semibold text-white transition-colors ${
-          variant === 'hero'
-            ? 'bg-gold-500 px-5 py-2.5 text-sm hover:bg-gold-600'
-            : 'bg-navy-900 px-3.5 py-1.5 text-xs hover:bg-navy-800'
+        className={`glass-btn-primary absolute right-1.5 ${
+          variant === 'hero' ? 'px-5 py-2.5 text-sm' : 'px-3.5 py-1.5 text-xs'
         }`}
       >
         Search

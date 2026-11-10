@@ -20,17 +20,17 @@ export function LibraryNavbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-40 border-b border-parchment-300 bg-ivory-50/95 backdrop-blur-md">
-      {/* Subtle institutional top bar */}
-      <div className="bg-navy-900 text-ivory-200">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-1.5 text-xs sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-40 border-b border-white/[0.1] bg-abyss-950/65 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_12px_36px_-14px_rgba(2,6,23,0.8)]">
+      {/* Subtle institutional top strip */}
+      <div className="border-b border-white/[0.06] bg-white/[0.025] text-slate-300">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-1.5 text-[11px] sm:px-6 lg:px-8">
           <div className="flex items-center gap-2">
-            <GraduationCap className="h-3.5 w-3.5 text-gold-400 shrink-0" />
-            <span className="font-medium tracking-wide">
+            <GraduationCap className="h-3.5 w-3.5 text-amethyst-300 shrink-0" />
+            <span className="font-medium tracking-wide text-slate-200">
               Dispur College, Guwahati, Assam, India
             </span>
           </div>
-          <span className="hidden sm:inline text-ivory-200/75">
+          <span className="hidden sm:inline text-slate-400">
             Department of Professional Studies — Academic Repository
           </span>
         </div>
@@ -38,40 +38,42 @@ export function LibraryNavbar() {
 
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/library" className="flex items-center gap-3 group">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy-900 text-gold-400 shadow-sm transition-transform group-hover:scale-105">
-            <BookMarked className="h-5 w-5" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/25 bg-gradient-to-br from-blue-500/30 via-amethyst-500/25 to-burgundy-700/35 text-white shadow-[0_6px_18px_-4px_rgba(79,70,229,0.5),inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-xl transition-all duration-300 ease-liquid group-hover:scale-105 group-hover:border-white/40">
+            <BookMarked className="h-5 w-5 text-amethyst-300" />
           </div>
           <div>
-            <p className="font-serif text-base font-bold text-navy-900 leading-tight sm:text-lg">
+            <p className="font-serif text-base font-bold text-white leading-tight sm:text-lg">
               Digital Library
             </p>
-            <p className="text-[11px] font-medium uppercase tracking-wider text-gold-600">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-rose-300/90">
               Professional Studies Dept.
             </p>
           </div>
         </Link>
 
-        {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-1">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`rounded-lg px-3.5 py-2 text-sm font-medium transition-colors ${
-                item.active
-                  ? 'bg-parchment-200 text-navy-900 font-semibold'
-                  : 'text-slate-600 hover:bg-parchment-100 hover:text-navy-900'
-              }`}
-            >
-              {item.label}
-            </Link>
-          ))}
-          <div className="ml-3 pl-3 border-l border-parchment-300">
+        {/* Desktop Glass Nav */}
+        <nav className="hidden md:flex items-center gap-1.5">
+          <div className="flex items-center gap-1 rounded-full border border-white/[0.1] bg-white/[0.04] p-1 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-300 ease-liquid ${
+                  item.active
+                    ? 'border border-white/25 bg-white/[0.14] text-white font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]'
+                    : 'text-slate-300 hover:bg-white/[0.08] hover:text-white'
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
+          <div className="ml-2">
             <Link
               href="/admin"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-parchment-400 bg-white px-3 py-1.5 text-xs font-semibold text-navy-800 shadow-sm transition-colors hover:border-navy-400 hover:bg-navy-50"
+              className="glass-btn px-3.5 py-2 text-xs"
             >
-              <ShieldCheck className="h-3.5 w-3.5 text-gold-600" />
+              <ShieldCheck className="h-3.5 w-3.5 text-rose-300" />
               Admin Portal
             </Link>
           </div>
@@ -81,7 +83,7 @@ export function LibraryNavbar() {
         <button
           type="button"
           onClick={() => setMobileOpen((prev) => !prev)}
-          className="inline-flex items-center justify-center rounded-lg border border-parchment-300 p-2 text-navy-900 md:hidden hover:bg-parchment-100"
+          className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/[0.07] p-2.5 text-slate-100 backdrop-blur-xl transition-all duration-200 hover:bg-white/[0.14] md:hidden"
           aria-label="Toggle navigation menu"
           aria-expanded={mobileOpen}
         >
@@ -89,18 +91,18 @@ export function LibraryNavbar() {
         </button>
       </div>
 
-      {/* Mobile Nav Drawer */}
+      {/* Mobile Glass Nav Drawer */}
       {mobileOpen && (
-        <div className="border-t border-parchment-300 bg-ivory-50 px-4 py-3 space-y-1 md:hidden">
+        <div className="border-t border-white/[0.1] bg-abyss-900/90 px-4 py-4 space-y-2 backdrop-blur-2xl md:hidden">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               onClick={() => setMobileOpen(false)}
-              className={`block rounded-lg px-3 py-2 text-sm font-medium ${
+              className={`block rounded-full px-4 py-2.5 text-sm font-medium transition-all ${
                 item.active
-                  ? 'bg-parchment-200 text-navy-900 font-semibold'
-                  : 'text-slate-700 hover:bg-parchment-100'
+                  ? 'border border-white/20 bg-white/[0.14] text-white font-semibold'
+                  : 'text-slate-300 hover:bg-white/[0.08] hover:text-white'
               }`}
             >
               {item.label}
@@ -109,9 +111,9 @@ export function LibraryNavbar() {
           <Link
             href="/admin"
             onClick={() => setMobileOpen(false)}
-            className="mt-2 flex items-center gap-2 rounded-lg border border-parchment-400 bg-white px-3 py-2 text-sm font-semibold text-navy-900"
+            className="glass-btn-accent mt-2 flex w-full justify-center py-2.5 text-sm"
           >
-            <ShieldCheck className="h-4 w-4 text-gold-600" />
+            <ShieldCheck className="h-4 w-4 text-rose-200" />
             Admin Portal
           </Link>
         </div>

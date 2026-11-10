@@ -34,15 +34,15 @@ export default async function EditBookPage({
       <div>
         <Link
           href="/admin/books"
-          className="mb-3 inline-flex items-center gap-1.5 text-xs font-semibold text-navy-800 hover:text-gold-600"
+          className="glass-btn group mb-4 px-3.5 py-1.5 text-xs"
         >
-          <ArrowLeft className="h-3.5 w-3.5" />
+          <ArrowLeft className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-x-0.5" />
           Back to Books
         </Link>
-        <h1 className="font-serif text-2xl font-bold text-navy-900 sm:text-3xl">
+        <h1 className="font-serif text-2xl font-bold text-white sm:text-3xl">
           Edit Book
         </h1>
-        <p className="mt-1 text-sm text-slate-600">
+        <p className="mt-1 text-sm text-slate-300">
           Update metadata, change student download permissions, or replace uploaded cloud files.
         </p>
       </div>

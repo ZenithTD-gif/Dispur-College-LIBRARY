@@ -119,30 +119,30 @@ export function AdminBooksManager({
       {errorMsg && (
         <div
           role="alert"
-          className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"
+          className="flex items-start gap-2.5 rounded-2xl border border-rose-400/35 bg-rose-500/15 p-4 text-sm text-rose-200 backdrop-blur-xl"
         >
-          <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+          <AlertCircle className="h-5 w-5 text-rose-300 shrink-0 mt-0.5" />
           <span>{errorMsg}</span>
         </div>
       )}
 
       {/* Search & Filters */}
-      <div className="academic-card p-4 grid gap-3 sm:grid-cols-4">
+      <div className="liquid-glass p-4 grid gap-3 sm:grid-cols-4">
         <div className="relative sm:col-span-2">
-          <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <input
             type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Filter books by title, author, or subject..."
-            className="input-academic pl-9"
+            className="liquid-input pl-10"
           />
         </div>
 
         <select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
-          className="input-academic"
+          className="liquid-input"
         >
           <option value="all">All Categories</option>
           {categories.map((cat) => (
@@ -155,7 +155,7 @@ export function AdminBooksManager({
         <select
           value={formatFilter}
           onChange={(e) => setFormatFilter(e.target.value)}
-          className="input-academic"
+          className="liquid-input"
         >
           <option value="all">All Formats</option>
           <option value="pdf">PDF Only</option>
@@ -165,28 +165,28 @@ export function AdminBooksManager({
 
       {/* Books Table */}
       {filteredBooks.length === 0 ? (
-        <div className="academic-card p-12 text-center space-y-3">
-          <BookOpen className="mx-auto h-10 w-10 text-gold-500/80" />
-          <h3 className="font-serif text-lg font-bold text-navy-900">
+        <div className="liquid-glass p-12 text-center space-y-3">
+          <BookOpen className="mx-auto h-10 w-10 text-amethyst-300" />
+          <h3 className="font-serif text-lg font-bold text-white">
             {books.length === 0 ? 'No Books Uploaded Yet' : 'No Books Match Your Filter'}
           </h3>
-          <p className="text-sm text-slate-600 max-w-md mx-auto">
+          <p className="text-sm text-slate-300 max-w-md mx-auto">
             {books.length === 0
               ? 'Upload your first departmental PDF or EPUB textbook to make it available in the Student Portal.'
               : 'Adjust your search query or filters to view matching books.'}
           </p>
           {books.length === 0 && (
-            <Link href="/admin/books/new" className="btn-primary mt-2">
-              <PlusCircle className="h-4 w-4 text-gold-300" />
+            <Link href="/admin/books/new" className="glass-btn-primary mt-2">
+              <PlusCircle className="h-4 w-4 text-amethyst-300" />
               Upload First Book
             </Link>
           )}
         </div>
       ) : (
-        <div className="academic-card overflow-hidden">
+        <div className="liquid-glass overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-parchment-300 bg-parchment-100/80 text-[11px] font-semibold uppercase tracking-wider text-slate-600">
+              <thead className="border-b border-white/[0.09] bg-white/[0.03] text-[11px] font-semibold uppercase tracking-wider text-slate-300">
                 <tr>
                   <th className="px-4 py-3.5">Book</th>
                   <th className="px-4 py-3.5">Category &amp; Subject</th>
@@ -196,14 +196,14 @@ export function AdminBooksManager({
                   <th className="px-4 py-3.5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-parchment-200">
+              <tbody className="divide-y divide-white/[0.08]">
                 {filteredBooks.map((book) => {
                   const isBusy = busyId === book.id;
                   return (
-                    <tr key={book.id} className="hover:bg-ivory-200/70 transition-colors">
+                    <tr key={book.id} className="hover:bg-white/[0.04] transition-colors">
                       <td className="px-4 py-3.5">
                         <div className="flex items-center gap-3 min-w-[220px]">
-                          <div className="h-14 w-10 shrink-0 overflow-hidden rounded border border-parchment-300">
+                          <div className="h-14 w-10 shrink-0 overflow-hidden rounded-lg border border-white/15">
                             <BookCover
                               title={book.title}
                               author={book.author}
@@ -213,10 +213,10 @@ export function AdminBooksManager({
                             />
                           </div>
                           <div className="min-w-0">
-                            <p className="font-serif font-bold text-navy-900 line-clamp-1">
+                            <p className="font-serif font-bold text-white line-clamp-1">
                               {book.title}
                             </p>
-                            <p className="text-xs text-slate-600 line-clamp-1">
+                            <p className="text-xs text-slate-300 line-clamp-1">
                               {book.author}
                             </p>
                           </div>
@@ -224,17 +224,17 @@ export function AdminBooksManager({
                       </td>
 
                       <td className="px-4 py-3.5">
-                        <p className="text-xs font-semibold text-navy-900">
+                        <p className="text-xs font-semibold text-white">
                           {book.category?.category_name || 'Uncategorized'}
                         </p>
-                        <p className="text-xs text-slate-500">{book.subject}</p>
+                        <p className="text-xs text-slate-400">{book.subject}</p>
                       </td>
 
                       <td className="px-4 py-3.5">
-                        <span className="inline-flex rounded bg-navy-900 px-2 py-0.5 font-mono text-[10px] font-semibold uppercase text-gold-300">
+                        <span className="inline-flex rounded-full border border-white/20 bg-white/[0.08] px-2.5 py-0.5 font-mono text-[10px] font-semibold uppercase text-blue-200">
                           {book.file_type}
                         </span>
-                        <p className="mt-1 font-mono text-[11px] text-slate-500">
+                        <p className="mt-1 font-mono text-[11px] text-slate-400">
                           {formatFileSize(book.file_size)}
                         </p>
                       </td>
@@ -244,10 +244,10 @@ export function AdminBooksManager({
                           type="button"
                           disabled={isBusy}
                           onClick={() => togglePermission(book, 'allow_download')}
-                          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold transition-colors ${
+                          className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold backdrop-blur-xl transition-all ${
                             book.allow_download
-                              ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
-                              : 'bg-amber-100 text-amber-800 hover:bg-amber-200'
+                              ? 'border-emerald-400/35 bg-emerald-500/20 text-emerald-200 hover:bg-emerald-500/30'
+                              : 'border-rose-400/35 bg-burgundy-800/35 text-rose-200 hover:bg-burgundy-700/45'
                           }`}
                         >
                           {book.allow_download ? (
@@ -269,10 +269,10 @@ export function AdminBooksManager({
                           type="button"
                           disabled={isBusy}
                           onClick={() => togglePermission(book, 'is_featured')}
-                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold transition-colors ${
+                          className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold backdrop-blur-xl transition-all ${
                             book.is_featured
-                              ? 'bg-gold-100 text-gold-700 hover:bg-gold-200'
-                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                              ? 'border-amethyst-400/40 bg-amethyst-500/25 text-amethyst-200 hover:bg-amethyst-500/35'
+                              : 'border-white/15 bg-white/[0.06] text-slate-300 hover:bg-white/[0.12]'
                           }`}
                         >
                           <Sparkles className="h-3 w-3" />
@@ -285,7 +285,7 @@ export function AdminBooksManager({
                           <Link
                             href={`/library/books/${book.id}/read`}
                             target="_blank"
-                            className="rounded-lg border border-parchment-300 bg-white p-2 text-navy-800 hover:bg-parchment-100"
+                            className="glass-btn p-2 text-xs"
                             title="Preview in online reader"
                           >
                             <ExternalLink className="h-3.5 w-3.5" />
@@ -293,7 +293,7 @@ export function AdminBooksManager({
 
                           <Link
                             href={`/admin/books/${book.id}/edit`}
-                            className="rounded-lg border border-parchment-300 bg-white p-2 text-navy-800 hover:bg-parchment-100"
+                            className="glass-btn p-2 text-xs"
                             title="Edit book & files"
                           >
                             <Edit className="h-3.5 w-3.5" />
@@ -304,7 +304,7 @@ export function AdminBooksManager({
                               type="button"
                               disabled={isBusy}
                               onClick={() => setConfirmDeleteBook(book)}
-                              className="rounded-lg border border-red-200 bg-white p-2 text-red-700 hover:bg-red-50 disabled:opacity-40"
+                              className="glass-btn-danger p-2 text-xs"
                               title="Delete book & cloud files"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
@@ -321,16 +321,16 @@ export function AdminBooksManager({
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Confirmation Liquid Glass Modal */}
       {confirmDeleteBook && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy-950/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-parchment-300 bg-white p-6 shadow-2xl space-y-4">
-            <h3 className="font-serif text-lg font-bold text-navy-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-abyss-950/75 p-4 backdrop-blur-md">
+          <div className="liquid-panel w-full max-w-md p-6 space-y-4">
+            <h3 className="font-serif text-lg font-bold text-white">
               Delete Book &amp; Cloud Files?
             </h3>
-            <p className="text-sm text-slate-600 leading-relaxed">
+            <p className="text-sm text-slate-300 leading-relaxed">
               This will permanently remove{' '}
-              <span className="font-semibold text-navy-900">
+              <span className="font-semibold text-white">
                 &ldquo;{confirmDeleteBook.title}&rdquo;
               </span>{' '}
               from the digital library database and delete its uploaded{' '}
@@ -342,7 +342,7 @@ export function AdminBooksManager({
                 type="button"
                 disabled={busyId === confirmDeleteBook.id}
                 onClick={() => setConfirmDeleteBook(null)}
-                className="btn-secondary"
+                className="glass-btn"
               >
                 Cancel
               </button>
@@ -350,7 +350,7 @@ export function AdminBooksManager({
                 type="button"
                 disabled={busyId === confirmDeleteBook.id}
                 onClick={executeDelete}
-                className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+                className="glass-btn-danger px-4 py-2.5 text-sm"
               >
                 {busyId === confirmDeleteBook.id ? (
                   <>

@@ -10,10 +10,10 @@ export default async function AdminTeamPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-serif text-2xl font-bold text-navy-900 sm:text-3xl">
+        <h1 className="font-serif text-2xl font-bold text-white sm:text-3xl">
           Authorized Administrators
         </h1>
-        <p className="mt-1 text-sm text-slate-600">
+        <p className="mt-1 text-sm text-slate-300">
           Manage department administrators, role permissions, and account access.
         </p>
       </div>

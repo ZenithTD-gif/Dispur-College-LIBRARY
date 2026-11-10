@@ -27,28 +27,28 @@ export default async function AdminDashboardPage() {
       value: stats.totalBooks,
       sub: `${stats.downloadableBooks} downloadable`,
       icon: BookOpen,
-      tone: 'bg-navy-900 text-gold-300',
+      tone: 'border-blue-400/25 bg-blue-500/20 text-blue-200',
     },
     {
       label: 'Total PDFs',
       value: stats.totalPdfs,
       sub: 'PDF study materials',
       icon: FileText,
-      tone: 'bg-gold-500 text-white',
+      tone: 'border-rose-300/25 bg-burgundy-700/35 text-rose-200',
     },
     {
       label: 'Total E-Books',
       value: stats.totalEpubs,
       sub: 'EPUB digital books',
       icon: BookText,
-      tone: 'bg-navy-700 text-ivory-50',
+      tone: 'border-amethyst-400/25 bg-amethyst-600/25 text-amethyst-300',
     },
     {
       label: 'Total Categories',
       value: stats.totalCategories,
       sub: `${formatFileSize(stats.totalStorageBytes)} cloud storage`,
       icon: FolderOpen,
-      tone: 'bg-parchment-300 text-navy-900',
+      tone: 'border-white/20 bg-white/[0.1] text-white',
     },
   ];
 
@@ -57,16 +57,16 @@ export default async function AdminDashboardPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-serif text-2xl font-bold text-navy-900 sm:text-3xl">
+          <h1 className="font-serif text-2xl font-bold text-white sm:text-3xl">
             Library Dashboard
           </h1>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-slate-300">
             Overview of departmental digital books, formats, categories, and recent uploads.
           </p>
         </div>
 
-        <Link href="/admin/books/new" className="btn-primary px-5 py-2.5">
-          <PlusCircle className="h-4 w-4 text-gold-300" />
+        <Link href="/admin/books/new" className="glass-btn-primary px-5 py-2.5">
+          <PlusCircle className="h-4 w-4 text-amethyst-300" />
           Upload New Book
         </Link>
       </div>
@@ -76,23 +76,23 @@ export default async function AdminDashboardPage() {
         {kpis.map((kpi) => {
           const Icon = kpi.icon;
           return (
-            <div key={kpi.label} className="academic-card p-5">
+            <div key={kpi.label} className="liquid-glass-hover p-5">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
                     {kpi.label}
                   </p>
-                  <p className="mt-2 font-serif text-3xl font-bold text-navy-900">
+                  <p className="mt-2 font-serif text-3xl font-bold text-white">
                     {kpi.value}
                   </p>
                 </div>
                 <div
-                  className={`flex h-11 w-11 items-center justify-center rounded-xl ${kpi.tone}`}
+                  className={`flex h-11 w-11 items-center justify-center rounded-2xl border backdrop-blur-xl ${kpi.tone}`}
                 >
                   <Icon className="h-5 w-5" />
                 </div>
               </div>
-              <p className="mt-3 text-xs text-slate-500">{kpi.sub}</p>
+              <p className="mt-3 text-xs text-slate-300/80">{kpi.sub}</p>
             </div>
           );
         })}
@@ -101,14 +101,14 @@ export default async function AdminDashboardPage() {
       {/* Main Content Split */}
       <div className="grid gap-6 lg:grid-cols-12">
         {/* Recently Uploaded Books */}
-        <section className="academic-card lg:col-span-8 overflow-hidden">
-          <div className="flex items-center justify-between border-b border-parchment-200 px-6 py-4">
-            <h2 className="font-serif text-lg font-bold text-navy-900">
+        <section className="liquid-glass lg:col-span-8 overflow-hidden">
+          <div className="flex items-center justify-between border-b border-white/[0.09] px-6 py-4">
+            <h2 className="font-serif text-lg font-bold text-white">
               Recently Uploaded Books
             </h2>
             <Link
               href="/admin/books"
-              className="inline-flex items-center gap-1 text-xs font-semibold text-navy-800 hover:text-gold-600"
+              className="glass-btn px-3 py-1.5 text-xs"
             >
               Manage all
               <ArrowRight className="h-3.5 w-3.5" />
@@ -117,23 +117,23 @@ export default async function AdminDashboardPage() {
 
           {recentBooks.length === 0 ? (
             <div className="p-10 text-center space-y-3">
-              <BookOpen className="mx-auto h-9 w-9 text-gold-500/80" />
-              <p className="text-sm font-semibold text-navy-900">
+              <BookOpen className="mx-auto h-9 w-9 text-amethyst-300" />
+              <p className="text-sm font-semibold text-white">
                 No books uploaded yet
               </p>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-300">
                 Click &ldquo;Upload New Book&rdquo; above to add your first PDF or EPUB resource.
               </p>
             </div>
           ) : (
-            <div className="divide-y divide-parchment-200">
+            <div className="divide-y divide-white/[0.08]">
               {recentBooks.map((book) => (
                 <div
                   key={book.id}
-                  className="flex flex-wrap items-center justify-between gap-4 px-6 py-4 hover:bg-ivory-200/60 transition-colors"
+                  className="flex flex-wrap items-center justify-between gap-4 px-6 py-4 transition-colors hover:bg-white/[0.04]"
                 >
                   <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                    <div className="h-14 w-10 shrink-0 overflow-hidden rounded border border-parchment-300">
+                    <div className="h-14 w-10 shrink-0 overflow-hidden rounded-lg border border-white/15">
                       <BookCover
                         title={book.title}
                         author={book.author}
@@ -145,26 +145,26 @@ export default async function AdminDashboardPage() {
                     <div className="min-w-0">
                       <Link
                         href={`/admin/books/${book.id}/edit`}
-                        className="font-serif text-sm font-bold text-navy-900 hover:text-gold-600 line-clamp-1"
+                        className="font-serif text-sm font-bold text-white hover:text-amethyst-300 line-clamp-1 transition-colors"
                       >
                         {book.title}
                       </Link>
-                      <p className="text-xs text-slate-600 line-clamp-1">
+                      <p className="text-xs text-slate-300 line-clamp-1">
                         {book.author} • {book.category?.category_name || book.subject}
                       </p>
                       <div className="mt-1 flex items-center gap-2 text-[11px]">
-                        <span className="rounded bg-navy-900 px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase text-gold-300">
+                        <span className="rounded-full border border-white/20 bg-white/[0.08] px-2 py-0.5 font-mono text-[10px] font-semibold uppercase text-blue-200">
                           {book.file_type}
                         </span>
-                        <span className="font-mono text-slate-500">
+                        <span className="font-mono text-slate-400">
                           {formatFileSize(book.file_size)}
                         </span>
                         {book.allow_download ? (
-                          <span className="inline-flex items-center gap-1 text-emerald-700 font-medium">
+                          <span className="inline-flex items-center gap-1 text-emerald-300 font-medium">
                             <Download className="h-3 w-3" /> Downloadable
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-amber-700 font-medium">
+                          <span className="inline-flex items-center gap-1 text-rose-300 font-medium">
                             <Lock className="h-3 w-3" /> Read Only
                           </span>
                         )}
@@ -176,14 +176,14 @@ export default async function AdminDashboardPage() {
                     <Link
                       href={`/library/books/${book.id}/read`}
                       target="_blank"
-                      className="inline-flex items-center gap-1 rounded-lg border border-parchment-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-navy-900 hover:bg-parchment-100"
+                      className="glass-btn px-3 py-1.5 text-xs"
                     >
                       Preview
                       <ExternalLink className="h-3 w-3" />
                     </Link>
                     <Link
                       href={`/admin/books/${book.id}/edit`}
-                      className="rounded-lg border border-parchment-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-navy-900 hover:bg-parchment-100"
+                      className="glass-btn px-3 py-1.5 text-xs"
                     >
                       Edit
                     </Link>
@@ -196,40 +196,40 @@ export default async function AdminDashboardPage() {
 
         {/* Cloud Storage & Audit Activity */}
         <section className="space-y-6 lg:col-span-4">
-          <div className="academic-card p-6 space-y-3">
-            <div className="flex items-center gap-2 text-navy-900">
-              <HardDrive className="h-4 w-4 text-gold-600" />
+          <div className="liquid-glass p-6 space-y-3">
+            <div className="flex items-center gap-2 text-white">
+              <HardDrive className="h-4 w-4 text-amethyst-300" />
               <h2 className="font-serif text-base font-bold">Cloud Storage Health</h2>
             </div>
-            <p className="text-xs leading-relaxed text-slate-600">
+            <p className="text-xs leading-relaxed text-slate-300">
               All uploaded PDFs, EPUBs, and cover images are stored securely in
               Supabase Cloud Storage buckets with Row Level Security.
             </p>
-            <div className="rounded-lg bg-parchment-100 p-3 flex items-center justify-between text-xs">
-              <span className="font-medium text-slate-600">Stored Book Volume</span>
-              <span className="font-mono font-bold text-navy-900">
+            <div className="liquid-well p-3.5 flex items-center justify-between text-xs">
+              <span className="font-medium text-slate-300">Stored Book Volume</span>
+              <span className="font-mono font-bold text-white">
                 {formatFileSize(stats.totalStorageBytes)}
               </span>
             </div>
           </div>
 
-          <div className="academic-card overflow-hidden">
-            <div className="flex items-center gap-2 border-b border-parchment-200 px-5 py-3.5">
-              <Activity className="h-4 w-4 text-gold-600" />
-              <h2 className="font-serif text-base font-bold text-navy-900">
+          <div className="liquid-glass overflow-hidden">
+            <div className="flex items-center gap-2 border-b border-white/[0.09] px-5 py-3.5">
+              <Activity className="h-4 w-4 text-rose-300" />
+              <h2 className="font-serif text-base font-bold text-white">
                 Recent Admin Activity
               </h2>
             </div>
             {recentLogs.length === 0 ? (
-              <p className="p-5 text-xs text-slate-500">
+              <p className="p-5 text-xs text-slate-400">
                 No administrative actions recorded yet.
               </p>
             ) : (
-              <ul className="divide-y divide-parchment-200 text-xs">
+              <ul className="divide-y divide-white/[0.08] text-xs">
                 {recentLogs.map((log) => (
                   <li key={log.id} className="px-5 py-3 space-y-0.5">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-mono font-semibold text-navy-900">
+                      <span className="font-mono font-semibold text-blue-200">
                         {log.action}
                       </span>
                       <span className="text-[11px] text-slate-400">
@@ -239,7 +239,7 @@ export default async function AdminDashboardPage() {
                         })}
                       </span>
                     </div>
-                    <p className="truncate text-slate-500">
+                    <p className="truncate text-slate-400">
                       {log.actor_email || 'System'}
                     </p>
                   </li>
