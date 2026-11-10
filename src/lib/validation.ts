@@ -231,3 +231,20 @@ export function canManageCategoriesDelete(role: AdminRole): boolean {
 export function canManageAdmins(role: AdminRole): boolean {
   return role === 'super_admin';
 }
+
+/**
+ * Restricts post-auth callback redirects strictly to internal `/admin` paths.
+ */
+export function sanitizeAdminRedirectPath(
+  raw: string | null | undefined,
+  fallback = '/admin'
+): string {
+  if (!raw) return fallback;
+  if (/[\u0000-\u001f\\]/.test(raw) || raw.includes('//')) {
+    return fallback;
+  }
+  if (raw === '/admin' || raw.startsWith('/admin/') || raw.startsWith('/admin?')) {
+    return raw;
+  }
+  return fallback;
+}

@@ -1,4 +1,8 @@
-import { mapBookWithCategory, type RawBookRow } from '@/lib/queries/mappers';
+import {
+  mapBookWithCategory,
+  mapCategoriesWithCounts,
+  type RawBookRow,
+} from '@/lib/queries/mappers';
 import { getSupabasePublicClient } from '@/lib/supabase/server';
 import { sanitizeSearchTerm } from '@/lib/validation';
 import type {
@@ -27,19 +31,13 @@ export async function getCategoriesWithCounts(): Promise<{
     return { configured: true, categories: [] };
   }
 
-  const counts = new Map<string, number>();
-  for (const row of bookCategoryRows ?? []) {
-    if (row.category_id) {
-      counts.set(row.category_id, (counts.get(row.category_id) ?? 0) + 1);
-    }
-  }
-
-  const categories: CategoryWithCount[] = (catRows as Category[]).map((cat) => ({
-    ...cat,
-    book_count: counts.get(cat.id) ?? 0,
-  }));
-
-  return { configured: true, categories };
+  return {
+    configured: true,
+    categories: mapCategoriesWithCounts(
+      catRows as Category[],
+      bookCategoryRows as Array<{ category_id: string | null }> | null
+    ),
+  };
 }
 
 export async function getLibraryHomeData(): Promise<{

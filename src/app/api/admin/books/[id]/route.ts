@@ -90,8 +90,16 @@ export async function PATCH(
     }
   }
 
-  if (data.cover_image_path && !isValidStoragePath(data.cover_image_path, 'covers/')) {
-    return NextResponse.json({ error: 'Invalid cover storage path.' }, { status: 400 });
+  if (data.cover_image_path) {
+    if (!isValidStoragePath(data.cover_image_path, 'covers/')) {
+      return NextResponse.json({ error: 'Invalid cover storage path.' }, { status: 400 });
+    }
+    if (data.cover_file_size && data.cover_file_size > limits.maxCoverBytes) {
+      return NextResponse.json(
+        { error: `Cover image exceeds maximum limit of ${limits.maxCoverMb} MB.` },
+        { status: 400 }
+      );
+    }
   }
 
   const updateFields: Record<string, unknown> = {};
@@ -148,43 +156,63 @@ export async function PATCH(
     );
   }
 
+  const assetOps: Array<Promise<unknown>> = [];
+
   if (isReplacingBookFile && data.file_storage_path) {
-    await adminClient
-      .from('storage_assets')
-      .delete()
-      .eq('storage_path', existingBook.file_storage_path);
-    await adminClient.from('storage_assets').insert({
-      book_id: id,
-      asset_kind: 'book_file',
-      bucket_name: BOOK_FILES_BUCKET,
-      storage_path: data.file_storage_path,
-      original_filename: data.file_name || existingBook.file_name,
-      mime_type: data.mime_type || existingBook.mime_type,
-      size_bytes: data.file_size || existingBook.file_size,
-      uploaded_by: auth.admin.id,
-    });
-    await safeRemoveStorageFile(adminClient, BOOK_FILES_BUCKET, existingBook.file_storage_path);
+    assetOps.push(
+      Promise.resolve(
+        adminClient
+          .from('storage_assets')
+          .delete()
+          .eq('storage_path', existingBook.file_storage_path)
+      ),
+      Promise.resolve(
+        adminClient.from('storage_assets').insert({
+          book_id: id,
+          asset_kind: 'book_file',
+          bucket_name: BOOK_FILES_BUCKET,
+          storage_path: data.file_storage_path,
+          original_filename: data.file_name || existingBook.file_name,
+          mime_type: data.mime_type || existingBook.mime_type,
+          size_bytes: data.file_size || existingBook.file_size,
+          uploaded_by: auth.admin.id,
+        })
+      ),
+      safeRemoveStorageFile(adminClient, BOOK_FILES_BUCKET, existingBook.file_storage_path)
+    );
   }
 
   if ((isReplacingCover || isRemovingCover) && existingBook.cover_image_path) {
-    await adminClient
-      .from('storage_assets')
-      .delete()
-      .eq('storage_path', existingBook.cover_image_path);
-    await safeRemoveStorageFile(adminClient, BOOK_COVERS_BUCKET, existingBook.cover_image_path);
+    assetOps.push(
+      Promise.resolve(
+        adminClient
+          .from('storage_assets')
+          .delete()
+          .eq('storage_path', existingBook.cover_image_path)
+      ),
+      safeRemoveStorageFile(adminClient, BOOK_COVERS_BUCKET, existingBook.cover_image_path)
+    );
   }
 
   if (isReplacingCover && data.cover_image_path) {
-    await adminClient.from('storage_assets').insert({
-      book_id: id,
-      asset_kind: 'cover_image',
-      bucket_name: BOOK_COVERS_BUCKET,
-      storage_path: data.cover_image_path,
-      original_filename: data.cover_original_name || 'cover-image',
-      mime_type: data.cover_mime_type || 'image/jpeg',
-      size_bytes: data.cover_file_size || 1,
-      uploaded_by: auth.admin.id,
-    });
+    assetOps.push(
+      Promise.resolve(
+        adminClient.from('storage_assets').insert({
+          book_id: id,
+          asset_kind: 'cover_image',
+          bucket_name: BOOK_COVERS_BUCKET,
+          storage_path: data.cover_image_path,
+          original_filename: data.cover_original_name || 'cover-image',
+          mime_type: data.cover_mime_type || 'image/jpeg',
+          size_bytes: data.cover_file_size || 1,
+          uploaded_by: auth.admin.id,
+        })
+      )
+    );
+  }
+
+  if (assetOps.length > 0) {
+    await Promise.all(assetOps);
   }
 
   await recordAuditLog({
@@ -240,8 +268,10 @@ export async function DELETE(
     );
   }
 
-  await safeRemoveStorageFile(adminClient, BOOK_FILES_BUCKET, existingBook.file_storage_path);
-  await safeRemoveStorageFile(adminClient, BOOK_COVERS_BUCKET, existingBook.cover_image_path);
+  await Promise.all([
+    safeRemoveStorageFile(adminClient, BOOK_FILES_BUCKET, existingBook.file_storage_path),
+    safeRemoveStorageFile(adminClient, BOOK_COVERS_BUCKET, existingBook.cover_image_path),
+  ]);
 
   await recordAuditLog({
     actorId: auth.admin.id,

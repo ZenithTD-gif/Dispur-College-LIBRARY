@@ -1,4 +1,8 @@
-import { mapBookWithCategory, type RawBookRow } from '@/lib/queries/mappers';
+import {
+  mapBookWithCategory,
+  mapCategoriesWithCounts,
+  type RawBookRow,
+} from '@/lib/queries/mappers';
 import { getSupabaseAdminClient } from '@/lib/supabase/admin';
 import { sanitizeSearchTerm } from '@/lib/validation';
 import type {
@@ -120,17 +124,10 @@ export async function getAdminCategories(): Promise<CategoryWithCount[]> {
     adminClient.from('books').select('category_id'),
   ]);
 
-  const countMap = new Map<string, number>();
-  for (const row of books ?? []) {
-    if (row.category_id) {
-      countMap.set(row.category_id, (countMap.get(row.category_id) ?? 0) + 1);
-    }
-  }
-
-  return ((categories as Category[] | null) ?? []).map((cat) => ({
-    ...cat,
-    book_count: countMap.get(cat.id) ?? 0,
-  }));
+  return mapCategoriesWithCounts(
+    (categories as Category[] | null) ?? [],
+    books as Array<{ category_id: string | null }> | null
+  );
 }
 
 export async function getAdminTeam(): Promise<AdminUser[]> {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -23,6 +23,15 @@ export default function UpdateAdminPasswordPage() {
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const redirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (redirectTimerRef.current) {
+        clearTimeout(redirectTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     async function checkAuth() {
@@ -103,7 +112,10 @@ export default function UpdateAdminPasswordPage() {
       }
 
       setSuccessMsg('Password updated successfully! Redirecting to Admin Dashboard...');
-      setTimeout(() => {
+      if (redirectTimerRef.current) {
+        clearTimeout(redirectTimerRef.current);
+      }
+      redirectTimerRef.current = setTimeout(() => {
         router.push('/admin');
         router.refresh();
       }, 1200);

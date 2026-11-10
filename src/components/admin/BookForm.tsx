@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -126,6 +126,15 @@ export function BookForm({
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastMessage | null>(null);
+
+  useEffect(() => {
+    const objectUrl = uploadedCover?.previewUrl;
+    return () => {
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [uploadedCover?.previewUrl]);
 
   async function cleanupUnlinkedUpload(bucket: 'book-files' | 'book-covers', path: string) {
     try {
@@ -722,6 +731,7 @@ export function BookForm({
                 <img
                   src={activeCoverPreview}
                   alt="Cover preview"
+                  decoding="async"
                   className="h-28 w-20 rounded-xl object-cover border border-champagne-300/25 shrink-0"
                 />
                 <div className="flex-1 min-w-0 space-y-2">

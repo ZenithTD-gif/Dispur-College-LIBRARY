@@ -40,9 +40,10 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isLoginRoute = pathname === '/admin/login';
+  const isPublicAdminAuthRoute =
+    pathname === '/admin/login' || pathname === '/admin/update-password';
   const isAdminApiRoute = pathname.startsWith('/api/admin');
-  const isAdminPageRoute = pathname.startsWith('/admin') && !isLoginRoute;
+  const isAdminPageRoute = pathname.startsWith('/admin') && !isPublicAdminAuthRoute;
 
   if (isAdminApiRoute && !user) {
     return NextResponse.json(

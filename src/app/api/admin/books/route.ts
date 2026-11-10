@@ -64,6 +64,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid cover image storage path.' }, { status: 400 });
   }
 
+  if (
+    data.cover_image_path &&
+    data.cover_file_size &&
+    data.cover_file_size > limits.maxCoverBytes
+  ) {
+    return NextResponse.json(
+      { error: `Cover image exceeds maximum limit of ${limits.maxCoverMb} MB.` },
+      { status: 400 }
+    );
+  }
+
   const adminClient = getSupabaseAdminClient();
   if (!adminClient) {
     return NextResponse.json({ error: 'Database admin client unavailable.' }, { status: 503 });

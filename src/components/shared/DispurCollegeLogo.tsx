@@ -22,6 +22,7 @@ export function DispurCollegeLogo({
         alt="Dispur College Official Logo"
         width={500}
         height={500}
+        decoding="async"
         className="h-full w-full object-contain select-none"
       />
     </div>

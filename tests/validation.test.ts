@@ -7,6 +7,7 @@ import {
   createBookSchema,
   formatFileSize,
   isValidStoragePath,
+  sanitizeAdminRedirectPath,
   sanitizeSearchTerm,
   sanitizeStorageFilename,
   slugifyCategory,
@@ -160,5 +161,19 @@ describe('Zod request schemas & RBAC permissions', () => {
     expect(canDeleteBooks('editor')).toBe(false);
 
     expect(canManageCategoriesDelete('editor')).toBe(false);
+  });
+
+  it('sanitizes admin redirect targets against open redirects', () => {
+    expect(sanitizeAdminRedirectPath('/admin')).toBe('/admin');
+    expect(sanitizeAdminRedirectPath('/admin/books')).toBe('/admin/books');
+    expect(sanitizeAdminRedirectPath('/admin/update-password?flow=recovery')).toBe(
+      '/admin/update-password?flow=recovery'
+    );
+    expect(sanitizeAdminRedirectPath('//evil.com')).toBe('/admin');
+    expect(sanitizeAdminRedirectPath('/admin@evil.com')).toBe('/admin');
+    expect(sanitizeAdminRedirectPath('https://evil.com/admin')).toBe('/admin');
+    expect(sanitizeAdminRedirectPath('/admin\\evil')).toBe('/admin');
+    expect(sanitizeAdminRedirectPath('/admin\nSet-Cookie: a=b')).toBe('/admin');
+    expect(sanitizeAdminRedirectPath('/library')).toBe('/admin');
   });
 });

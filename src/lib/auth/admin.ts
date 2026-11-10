@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { NextResponse } from 'next/server';
 import { isSupabaseAdminConfigured, isSupabaseConfigured } from '@/lib/env';
 import { getSupabaseAdminClient } from '@/lib/supabase/admin';
@@ -8,7 +9,7 @@ export interface AuthenticatedAdmin {
   admin: AdminUser;
 }
 
-export async function getCurrentAdmin(): Promise<AuthenticatedAdmin | null> {
+async function resolveCurrentAdmin(): Promise<AuthenticatedAdmin | null> {
   if (!isSupabaseConfigured()) {
     return null;
   }
@@ -39,6 +40,9 @@ export async function getCurrentAdmin(): Promise<AuthenticatedAdmin | null> {
 
   return { admin: adminRecord };
 }
+
+// Deduplicate auth/admin lookups across nested Server Components in one request.
+export const getCurrentAdmin = cache(resolveCurrentAdmin);
 
 export async function requireAdminApi(
   allowedRoles?: AdminRole[]

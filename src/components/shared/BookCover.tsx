@@ -35,6 +35,7 @@ export function BookCover({
           className="h-full w-full object-cover transition-transform duration-500 ease-liquid group-hover:scale-[1.04]"
           onError={() => setImgFailed(true)}
           loading="lazy"
+          decoding="async"
         />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-charcoal-950/65 via-transparent to-offwhite-50/[0.06]" />
       </div>

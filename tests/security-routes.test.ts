@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockGetUser = vi.fn();
+const mockExchangeCodeForSession = vi.fn();
 const mockAdminFrom = vi.fn();
 const mockStorageRemove = vi.fn();
 const mockCreateSignedUrl = vi.fn();
@@ -29,6 +30,7 @@ vi.mock('@/lib/supabase/server', () => ({
   getSupabaseServerClient: async () => ({
     auth: {
       getUser: mockGetUser,
+      exchangeCodeForSession: mockExchangeCodeForSession,
     },
   }),
   getSupabasePublicClient: () => null,
@@ -52,11 +54,15 @@ import { GET as healthGet } from '@/app/api/health/route';
 import { GET as downloadBookGet } from '@/app/api/books/[id]/download/route';
 import { GET as streamBookGet } from '@/app/api/books/[id]/stream/route';
 import { POST as createBookPost } from '@/app/api/admin/books/route';
-import { DELETE as deleteBookDelete } from '@/app/api/admin/books/[id]/route';
+import {
+  DELETE as deleteBookDelete,
+  PATCH as updateBookPatch,
+} from '@/app/api/admin/books/[id]/route';
 import { DELETE as deleteCategoryDelete } from '@/app/api/admin/categories/[id]/route';
 import { POST as createTeamAdminPost } from '@/app/api/admin/team/route';
 import { POST as cleanupUploadPost } from '@/app/api/admin/uploads/cleanup/route';
 import { POST as signUploadPost } from '@/app/api/admin/uploads/sign/route';
+import { GET as authCallbackGet } from '@/app/auth/callback/route';
 
 describe('API route security & authorization enforcement', () => {
   beforeEach(() => {
@@ -468,6 +474,88 @@ describe('API route security & authorization enforcement', () => {
     } finally {
       globalThis.fetch = originalFetch;
     }
+  });
+
+  it('rejects oversized cover_file_size on POST and PATCH /api/admin/books', async () => {
+    const bookUuid = '550e8400-e29b-41d4-a716-446655440022';
+    const catUuid = '550e8400-e29b-41d4-a716-446655440001';
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'admin-1' } }, error: null });
+    mockAdminFrom.mockImplementation((table: string) => {
+      if (table === 'admin_users') {
+        return {
+          select: () => ({
+            eq: () => ({
+              maybeSingle: async () => ({
+                data: { id: 'admin-1', role: 'admin', is_active: true },
+                error: null,
+              }),
+            }),
+          }),
+        };
+      }
+      return {
+        select: () => ({
+          eq: () => ({
+            maybeSingle: async () => ({
+              data: { id: bookUuid, file_storage_path: 'books/2026/a.pdf', cover_image_path: null },
+              error: null,
+            }),
+          }),
+        }),
+      };
+    });
+
+    const postReq = new NextRequest('http://localhost:3000/api/admin/books', {
+      method: 'POST',
+      body: JSON.stringify({
+        title: 'Corporate Law',
+        author: 'A. Author',
+        description: 'Academic textbook for BCom Honours students.',
+        subject: 'Business Law',
+        category_id: catUuid,
+        file_storage_path: 'books/2026/law.pdf',
+        file_name: 'law.pdf',
+        file_type: 'pdf',
+        mime_type: 'application/pdf',
+        file_size: 1024,
+        cover_image_path: 'covers/2026/big.jpg',
+        cover_file_size: 9 * 1024 * 1024,
+      }),
+    });
+    const postRes = await createBookPost(postReq);
+    expect(postRes.status).toBe(400);
+
+    const patchReq = new NextRequest(`http://localhost:3000/api/admin/books/${bookUuid}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        cover_image_path: 'covers/2026/big.jpg',
+        cover_file_size: 9 * 1024 * 1024,
+      }),
+    });
+    const patchRes = await updateBookPatch(patchReq, {
+      params: Promise.resolve({ id: bookUuid }),
+    });
+    expect(patchRes.status).toBe(400);
+  });
+
+  it('prevents open redirects on /auth/callback', async () => {
+    mockExchangeCodeForSession.mockResolvedValue({ error: null });
+
+    const maliciousReq = new NextRequest(
+      'http://localhost:3000/auth/callback?code=abc123&next=/admin@evil.com'
+    );
+    const maliciousRes = await authCallbackGet(maliciousReq);
+    expect(maliciousRes.status).toBe(307);
+    expect(maliciousRes.headers.get('location')).toBe('http://localhost:3000/admin');
+
+    const validReq = new NextRequest(
+      'http://localhost:3000/auth/callback?code=abc123&next=/admin/update-password'
+    );
+    const validRes = await authCallbackGet(validReq);
+    expect(validRes.status).toBe(307);
+    expect(validRes.headers.get('location')).toBe(
+      'http://localhost:3000/admin/update-password'
+    );
   });
 });
 
