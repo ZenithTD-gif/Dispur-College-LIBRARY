@@ -27,7 +27,16 @@ async function main() {
   });
 
   console.log('Checking Supabase Database Tables...');
-  const tables = ['admin_users', 'categories', 'books', 'storage_assets', 'audit_logs'];
+  const tables = [
+    'admin_users',
+    'categories',
+    'books',
+    'storage_assets',
+    'audit_logs',
+    'students',
+    'library_settings',
+    'book_rentals',
+  ];
   for (const table of tables) {
     const { count, error } = await supabase
       .from(table)

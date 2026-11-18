@@ -114,3 +114,96 @@ export interface AdminOverviewStats {
   totalStorageBytes: number;
 }
 
+export type RentalStatus = 'issued' | 'returned' | 'overdue' | 'lost';
+
+export interface Student {
+  id: string;
+  full_name: string;
+  registration_number: string;
+  college_roll_number: string;
+  department: string;
+  semester: string;
+  email: string;
+  phone: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LibrarySettings {
+  id: number;
+  daily_fine_rate: number;
+  borrowing_period_days: number;
+  max_books_per_student: number;
+  currency_symbol: string;
+  updated_at: string;
+  updated_by: string | null;
+}
+
+export interface BookRental {
+  id: string;
+  student_id: string;
+  book_id: string;
+  issue_date: string;
+  due_date: string;
+  return_date: string | null;
+  status: RentalStatus;
+  daily_fine_rate_snapshot: number;
+  fine_amount: number;
+  fine_paid: boolean;
+  notes: string | null;
+  issued_by: string | null;
+  returned_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BookRentalWithDetails extends BookRental {
+  book?: {
+    id: string;
+    title: string;
+    author: string;
+    subject: string;
+    cover_image_path: string | null;
+    cover_url?: string | null;
+    file_type: BookFileType;
+    allow_download: boolean;
+    file_storage_path?: string;
+  } | null;
+  student?: Pick<
+    Student,
+    | 'id'
+    | 'full_name'
+    | 'registration_number'
+    | 'college_roll_number'
+    | 'department'
+    | 'semester'
+    | 'email'
+    | 'phone'
+  > | null;
+  remaining_days: number;
+  overdue_days: number;
+  calculated_fine: number;
+  is_overdue: boolean;
+}
+
+export interface StudentDashboardData {
+  student: Student;
+  activeRentals: BookRentalWithDetails[];
+  historyRentals: BookRentalWithDetails[];
+  totalOutstandingFine: number;
+  activeLoanCount: number;
+  overdueLoanCount: number;
+  settings: LibrarySettings;
+}
+
+export interface RentalOverviewStats {
+  totalRentals: number;
+  activeRentals: number;
+  overdueRentals: number;
+  returnedRentals: number;
+  totalStudents: number;
+  totalOutstandingFines: number;
+}
+
+

@@ -63,6 +63,9 @@ import { POST as createTeamAdminPost } from '@/app/api/admin/team/route';
 import { POST as cleanupUploadPost } from '@/app/api/admin/uploads/cleanup/route';
 import { POST as signUploadPost } from '@/app/api/admin/uploads/sign/route';
 import { GET as authCallbackGet } from '@/app/auth/callback/route';
+import { GET as rentalsGet, POST as rentalsPost } from '@/app/api/admin/rentals/route';
+import { GET as studentDashboardGet } from '@/app/api/student/dashboard/route';
+import { GET as studentProfileGet } from '@/app/api/student/profile/route';
 
 describe('API route security & authorization enforcement', () => {
   beforeEach(() => {
@@ -556,6 +559,44 @@ describe('API route security & authorization enforcement', () => {
     expect(validRes.headers.get('location')).toBe(
       'http://localhost:3000/admin/update-password'
     );
+
+    const studentReq = new NextRequest(
+      'http://localhost:3000/auth/callback?code=abc123&next=/student/dashboard'
+    );
+    const studentRes = await authCallbackGet(studentReq);
+    expect(studentRes.status).toBe(307);
+    expect(studentRes.headers.get('location')).toBe(
+      'http://localhost:3000/student/dashboard'
+    );
+  });
+
+  it('rejects unauthenticated requests to admin rentals endpoint', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: null }, error: null });
+
+    const getReq = new NextRequest('http://localhost:3000/api/admin/rentals');
+    const getRes = await rentalsGet(getReq);
+    expect(getRes.status).toBe(401);
+
+    const postReq = new NextRequest('http://localhost:3000/api/admin/rentals', {
+      method: 'POST',
+      body: JSON.stringify({}),
+    });
+    const postRes = await rentalsPost(postReq);
+    expect(postRes.status).toBe(401);
+  });
+
+  it('rejects unauthenticated requests to student dashboard endpoint', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: null }, error: null });
+
+    const res = await studentDashboardGet();
+    expect(res.status).toBe(401);
+  });
+
+  it('rejects unauthenticated requests to student profile endpoint', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: null }, error: null });
+
+    const res = await studentProfileGet();
+    expect(res.status).toBe(401);
   });
 });
 

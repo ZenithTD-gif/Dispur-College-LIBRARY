@@ -5,11 +5,13 @@ import {
   BookOpen,
   Building2,
   Calendar,
+  CheckCircle2,
+  Clock,
   Download,
   FileType,
   Globe,
-  Hash,
   HardDrive,
+  Hash,
   Lock,
   Sparkles,
 } from 'lucide-react';
@@ -20,6 +22,7 @@ import { BookCover } from '@/components/shared/BookCover';
 import { LiquidTiltCard } from '@/components/shared/LiquidTiltCard';
 import { SetupNotice } from '@/components/shared/SetupNotice';
 import { getBookById, getRelatedBooks } from '@/lib/queries/library';
+import { getSupabaseAdminClient } from '@/lib/supabase/admin';
 import { formatFileSize, isValidUuid } from '@/lib/validation';
 
 export const dynamic = 'force-dynamic';
@@ -52,6 +55,17 @@ export default async function BookDetailsPage({
   if (!book) {
     notFound();
   }
+
+  // Check physical loan status
+  const adminClient = getSupabaseAdminClient();
+  const { data: activeLoan } = adminClient
+    ? await adminClient
+        .from('book_rentals')
+        .select('id, due_date')
+        .eq('book_id', id)
+        .eq('status', 'issued')
+        .maybeSingle()
+    : { data: null };
 
   const relatedBooks = await getRelatedBooks(book, 4);
   const formatLabel = book.file_type.toUpperCase();
@@ -161,6 +175,37 @@ export default async function BookDetailsPage({
                       {book.description}
                     </p>
                   </div>
+
+                  {/* Physical Copy Rental Availability */}
+                  {activeLoan ? (
+                    <div className="rounded-2xl border border-champagne-300/30 bg-maroon-950/40 p-4 backdrop-blur-xl">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-champagne-300" />
+                        <span className="text-xs font-semibold text-offwhite-100">
+                          Physical Department Copy: Currently Issued
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs text-offwhite-300">
+                        This physical copy is currently checked out by a student. Due back on{' '}
+                        <span className="font-semibold text-champagne-200">
+                          {new Date(activeLoan.due_date).toLocaleDateString('en-IN')}
+                        </span>
+                        . The digital version remains fully accessible below.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="rounded-2xl border border-emerald-500/30 bg-emerald-950/25 p-4 backdrop-blur-xl">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                        <span className="text-xs font-semibold text-emerald-200">
+                          Physical Department Copy: Available for Borrowing
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs text-offwhite-300">
+                        Available at the Professional Studies Library counter. Registered students enjoy a 7-day free borrowing period.
+                      </p>
+                    </div>
+                  )}
 
                   {/* Metadata Glass Well Grid */}
                   <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3">

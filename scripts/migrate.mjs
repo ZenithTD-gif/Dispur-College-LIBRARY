@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import { createClient } from '@supabase/supabase-js';
 import pg from 'pg';
 import Ws from 'ws';
@@ -53,17 +53,12 @@ async function main() {
     process.exit(1);
   }
 
-  const migrationPath = resolve(
-    process.cwd(),
-    'supabase/migrations/202611100001_initial_schema.sql'
-  );
-  const fullSql = readFileSync(migrationPath, 'utf8');
+  const migrationsDir = resolve(process.cwd(), 'supabase/migrations');
+  const files = readdirSync(migrationsDir)
+    .filter((f) => f.endsWith('.sql'))
+    .sort();
 
-  // Split public schema migration vs storage.objects policies in case postgres lacks ownership on storage.objects
-  const storagePolicyMarker = '-- 17. Storage Object RLS Policies';
-  const markerIdx = fullSql.indexOf(storagePolicyMarker);
-  const coreSql = markerIdx > -1 ? fullSql.slice(0, markerIdx) : fullSql;
-  const storageSql = markerIdx > -1 ? fullSql.slice(markerIdx) : '';
+  console.log(`Found ${files.length} migration file(s) in supabase/migrations.`);
 
   const client = new Client({
     connectionString: databaseUrl,
@@ -72,24 +67,31 @@ async function main() {
 
   await client.connect();
   try {
-    console.log('Applying core PostgreSQL schema, indexes, RLS policies, and buckets...');
-    await client.query(coreSql);
-    console.log('Core schema migration applied cleanly.');
+    for (const file of files) {
+      console.log(`Applying migration: ${file}...`);
+      const fullSql = readFileSync(join(migrationsDir, file), 'utf8');
 
-    if (storageSql) {
-      try {
-        await client.query(storageSql);
-        console.log('Storage object RLS policies applied cleanly.');
-      } catch (err) {
-        if (err && err.code === '42501') {
-          console.warn(
-            'Notice: storage.objects policies require Supabase SQL Editor (Dashboard owner role).'
-          );
-          console.warn(
-            'Run lines 326-374 of supabase/migrations/202611100001_initial_schema.sql in Supabase SQL Editor if direct client uploads need RLS.'
-          );
-        } else {
-          throw err;
+      // Split public schema migration vs storage.objects policies in case postgres lacks ownership on storage.objects
+      const storagePolicyMarker = '-- 17. Storage Object RLS Policies';
+      const markerIdx = fullSql.indexOf(storagePolicyMarker);
+      const coreSql = markerIdx > -1 ? fullSql.slice(0, markerIdx) : fullSql;
+      const storageSql = markerIdx > -1 ? fullSql.slice(markerIdx) : '';
+
+      await client.query(coreSql);
+      console.log(`  Cleanly applied ${file}`);
+
+      if (storageSql) {
+        try {
+          await client.query(storageSql);
+          console.log(`  Storage object RLS policies applied.`);
+        } catch (err) {
+          if (err && err.code === '42501') {
+            console.warn(
+              '  Notice: storage.objects policies require Supabase SQL Editor (Dashboard owner role).'
+            );
+          } else {
+            throw err;
+          }
         }
       }
     }

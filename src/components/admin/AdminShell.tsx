@@ -4,9 +4,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
+  BookMarked,
   BookOpen,
   ExternalLink,
   FolderOpen,
+  GraduationCap,
   KeyRound,
   LayoutDashboard,
   LogOut,
@@ -38,6 +40,12 @@ export function AdminShell({
       label: 'Dashboard',
       icon: LayoutDashboard,
       active: pathname === '/admin',
+    },
+    {
+      href: '/admin/rentals',
+      label: 'Student & Rentals',
+      icon: BookMarked,
+      active: pathname.startsWith('/admin/rentals'),
     },
     {
       href: '/admin/books',
@@ -201,10 +209,18 @@ export function AdminShell({
             <Link
               href="/library"
               target="_blank"
-              className="glass-btn px-3.5 py-1.5 text-xs"
+              className="glass-btn px-3 py-1.5 text-xs"
             >
-              <span>Student Portal</span>
+              <span>Public Library</span>
               <ExternalLink className="h-3.5 w-3.5 text-champagne-300" />
+            </Link>
+            <Link
+              href="/student/login"
+              target="_blank"
+              className="glass-btn px-3 py-1.5 text-xs text-champagne-200"
+            >
+              <GraduationCap className="h-3.5 w-3.5 text-champagne-300" />
+              <span className="hidden sm:inline">Student Portal</span>
             </Link>
             <Link href="/admin/books/new" className="glass-btn-primary py-1.5 px-3.5 text-xs">
               <PlusCircle className="h-3.5 w-3.5 text-champagne-200" />

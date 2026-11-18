@@ -248,3 +248,206 @@ export function sanitizeAdminRedirectPath(
   }
   return fallback;
 }
+
+/**
+ * Restricts post-auth callback redirects to allowed internal paths (/admin, /student, /library).
+ */
+export function sanitizeAuthRedirectPath(
+  raw: string | null | undefined,
+  fallback = '/admin'
+): string {
+  if (!raw) return fallback;
+  if (/[\u0000-\u001f\\]/.test(raw) || raw.includes('//')) {
+    return fallback;
+  }
+  if (
+    raw === '/admin' ||
+    raw.startsWith('/admin/') ||
+    raw.startsWith('/admin?') ||
+    raw === '/student' ||
+    raw.startsWith('/student/') ||
+    raw.startsWith('/student?') ||
+    raw === '/library' ||
+    raw.startsWith('/library/') ||
+    raw.startsWith('/library?')
+  ) {
+    return raw;
+  }
+  return fallback;
+}
+
+export const studentRegistrationSchema = z
+  .object({
+    fullName: z
+      .string()
+      .trim()
+      .min(2, 'Full name must be at least 2 characters')
+      .max(120, 'Full name is too long'),
+    registrationNumber: z
+      .string()
+      .trim()
+      .min(3, 'GU Registration number must be at least 3 characters')
+      .max(50, 'Registration number is too long'),
+    collegeRollNumber: z
+      .string()
+      .trim()
+      .min(1, 'College roll number is required')
+      .max(50, 'College roll number is too long'),
+    department: z
+      .string()
+      .trim()
+      .min(2, 'Department is required')
+      .max(100),
+    semester: z
+      .string()
+      .trim()
+      .min(1, 'Semester is required')
+      .max(50),
+    email: z
+      .string()
+      .trim()
+      .email('Please enter a valid email address')
+      .toLowerCase(),
+    phone: z
+      .string()
+      .trim()
+      .min(7, 'Mobile phone number must be at least 7 digits')
+      .max(20, 'Mobile phone number is too long')
+      .regex(/^[0-9+\s\-()]{7,20}$/, 'Please enter a valid mobile number'),
+    password: z
+      .string()
+      .min(6, 'Password must be at least 6 characters')
+      .max(128, 'Password cannot exceed 128 characters'),
+    confirmPassword: z.string().min(1, 'Please confirm your password'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match.',
+    path: ['confirmPassword'],
+  });
+
+export const studentLoginSchema = z.object({
+  email: z.string().trim().email('Please enter a valid email address').toLowerCase(),
+  password: z.string().min(1, 'Password is required'),
+});
+
+export const studentProfileUpdateSchema = z.object({
+  fullName: z
+    .string()
+    .trim()
+    .min(2, 'Full name must be at least 2 characters')
+    .max(120)
+    .optional(),
+  department: z
+    .string()
+    .trim()
+    .min(2, 'Department is required')
+    .max(100)
+    .optional(),
+  semester: z
+    .string()
+    .trim()
+    .min(1, 'Semester is required')
+    .max(50)
+    .optional(),
+  phone: z
+    .string()
+    .trim()
+    .min(7, 'Mobile number must be at least 7 digits')
+    .max(20)
+    .regex(/^[0-9+\s\-()]{7,20}$/, 'Please enter a valid mobile number')
+    .optional(),
+});
+
+export const issueBookSchema = z.object({
+  studentId: z.string().uuid('Please select a valid registered student'),
+  bookId: z.string().uuid('Please select a valid book to issue'),
+  issueDate: z.string().optional(),
+  borrowingPeriodDays: z.number().int().min(1).max(90).optional(),
+  notes: z.string().trim().max(500).optional().nullable(),
+});
+
+export const returnBookSchema = z.object({
+  rentalId: z.string().uuid('Invalid rental ID'),
+  returnDate: z.string().optional(),
+  fineAmount: z.number().min(0).optional(),
+  finePaid: z.boolean().default(false),
+  notes: z.string().trim().max(500).optional().nullable(),
+});
+
+export const updateFineStatusSchema = z.object({
+  rentalId: z.string().uuid('Invalid rental ID'),
+  finePaid: z.boolean(),
+  fineAmount: z.number().min(0).optional(),
+});
+
+export const librarySettingsUpdateSchema = z.object({
+  dailyFineRate: z.number().min(0, 'Fine rate cannot be negative').max(1000),
+  borrowingPeriodDays: z.number().int().min(1, 'Borrowing period must be at least 1 day').max(90),
+  maxBooksPerStudent: z.number().int().min(1, 'Maximum books must be at least 1').max(20),
+});
+
+export function calculateRentalDetails(
+  rental: {
+    issue_date: string;
+    due_date: string;
+    return_date: string | null;
+    status: string;
+    daily_fine_rate_snapshot: number;
+    fine_amount: number;
+    fine_paid: boolean;
+  },
+  currentDailyRate?: number
+) {
+  const now = new Date();
+  const dueDate = new Date(rental.due_date);
+  const isReturned = rental.status === 'returned' && Boolean(rental.return_date);
+  const effectiveEndDate = isReturned ? new Date(rental.return_date!) : now;
+
+  const rate =
+    currentDailyRate !== undefined
+      ? currentDailyRate
+      : Number(rental.daily_fine_rate_snapshot || 5);
+
+  let overdueDays = 0;
+  let remainingDays = 0;
+  let calculatedFine = 0;
+  let isOverdue = false;
+
+  // Calendar day calculation based on dates for exact day counts
+  const endDay = new Date(
+    effectiveEndDate.getFullYear(),
+    effectiveEndDate.getMonth(),
+    effectiveEndDate.getDate()
+  );
+  const dueDay = new Date(
+    dueDate.getFullYear(),
+    dueDate.getMonth(),
+    dueDate.getDate()
+  );
+
+  const diffMs = endDay.getTime() - dueDay.getTime();
+  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays > 0) {
+    overdueDays = diffDays;
+    isOverdue = true;
+    remainingDays = 0;
+    if (isReturned && Number(rental.fine_amount) > 0) {
+      calculatedFine = Number(rental.fine_amount);
+    } else {
+      calculatedFine = overdueDays * rate;
+    }
+  } else {
+    remainingDays = Math.max(0, -diffDays);
+    overdueDays = 0;
+    isOverdue = false;
+    calculatedFine = isReturned ? Number(rental.fine_amount || 0) : 0;
+  }
+
+  return {
+    remaining_days: remainingDays,
+    overdue_days: overdueDays,
+    calculated_fine: calculatedFine,
+    is_overdue: isOverdue,
+  };
+}

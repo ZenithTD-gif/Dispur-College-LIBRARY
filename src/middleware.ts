@@ -45,6 +45,11 @@ export async function middleware(request: NextRequest) {
   const isAdminApiRoute = pathname.startsWith('/api/admin');
   const isAdminPageRoute = pathname.startsWith('/admin') && !isPublicAdminAuthRoute;
 
+  const isStudentApiAuthRoute = pathname.startsWith('/api/student/auth');
+  const isStudentApiRoute = pathname.startsWith('/api/student') && !isStudentApiAuthRoute;
+  const isStudentDashboardRoute =
+    pathname === '/student/dashboard' || pathname.startsWith('/student/dashboard/');
+
   if (isAdminApiRoute && !user) {
     return NextResponse.json(
       { error: 'Authentication required. Please sign in as an administrator.' },
@@ -59,9 +64,29 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
+  if (isStudentApiRoute && !user) {
+    return NextResponse.json(
+      { error: 'Authentication required. Please log in as a student.' },
+      { status: 401 }
+    );
+  }
+
+  if (isStudentDashboardRoute && !user) {
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = '/student/login';
+    loginUrl.searchParams.set('next', pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
   return response;
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/api/admin/:path*'],
+  matcher: [
+    '/admin/:path*',
+    '/api/admin/:path*',
+    '/student/dashboard',
+    '/student/dashboard/:path*',
+    '/api/student/:path*',
+  ],
 };

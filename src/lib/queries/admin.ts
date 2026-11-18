@@ -70,6 +70,58 @@ export async function getAdminOverviewData(): Promise<{
   };
 }
 
+export async function getRentalOverviewSummary(): Promise<{
+  activeRentals: number;
+  overdueRentals: number;
+  totalStudents: number;
+  outstandingFines: number;
+}> {
+  const adminClient = getSupabaseAdminClient();
+  if (!adminClient) {
+    return { activeRentals: 0, overdueRentals: 0, totalStudents: 0, outstandingFines: 0 };
+  }
+
+  const [rentalsRes, studentsRes, settingsRes] = await Promise.all([
+    adminClient
+      .from('book_rentals')
+      .select('status, due_date, fine_amount, fine_paid, daily_fine_rate_snapshot'),
+    adminClient.from('students').select('*', { count: 'exact', head: true }),
+    adminClient
+      .from('library_settings')
+      .select('daily_fine_rate')
+      .eq('id', 1)
+      .maybeSingle(),
+  ]);
+
+  const dailyRate = Number(settingsRes.data?.daily_fine_rate || 5);
+  const now = new Date();
+  let active = 0;
+  let overdue = 0;
+  let fines = 0;
+
+  for (const r of rentalsRes.data || []) {
+    if (r.status === 'issued') {
+      active++;
+      if (new Date(r.due_date).getTime() < now.getTime()) {
+        overdue++;
+        const diffDays = Math.ceil(
+          (now.getTime() - new Date(r.due_date).getTime()) / (1000 * 60 * 60 * 24)
+        );
+        fines += diffDays * dailyRate;
+      }
+    } else if (r.status === 'returned' && !r.fine_paid) {
+      fines += Number(r.fine_amount || 0);
+    }
+  }
+
+  return {
+    activeRentals: active,
+    overdueRentals: overdue,
+    totalStudents: studentsRes.count || 0,
+    outstandingFines: fines,
+  };
+}
+
 export async function getAdminBooks(params?: {
   q?: string;
   categoryId?: string;

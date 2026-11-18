@@ -2,6 +2,7 @@ import Link from 'next/link';
 import {
   Activity,
   ArrowRight,
+  BookMarked,
   BookOpen,
   BookText,
   Download,
@@ -13,13 +14,16 @@ import {
   PlusCircle,
 } from 'lucide-react';
 import { BookCover } from '@/components/shared/BookCover';
-import { getAdminOverviewData } from '@/lib/queries/admin';
+import { getAdminOverviewData, getRentalOverviewSummary } from '@/lib/queries/admin';
 import { formatFileSize } from '@/lib/validation';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminDashboardPage() {
-  const { stats, recentBooks, recentLogs } = await getAdminOverviewData();
+  const [{ stats, recentBooks, recentLogs }, rentalSummary] = await Promise.all([
+    getAdminOverviewData(),
+    getRentalOverviewSummary(),
+  ]);
 
   const kpis = [
     {
@@ -97,6 +101,80 @@ export default async function AdminDashboardPage() {
           );
         })}
       </div>
+
+      {/* Student & Book Rental Management Section */}
+      <section className="liquid-panel p-6 sm:p-7 relative overflow-hidden">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-offwhite-100/[0.1] pb-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="glass-pill border-champagne-300/35 bg-maroon-900/60 px-2.5 py-0.5 text-[11px] font-semibold text-champagne-200">
+                Department Management
+              </span>
+            </div>
+            <h2 className="mt-1 font-serif text-xl font-bold text-offwhite-50 sm:text-2xl">
+              Student & Book Rental Management
+            </h2>
+            <p className="mt-1 text-xs sm:text-sm text-offwhite-300">
+              Track 7-day free borrowing periods, issue books, record returns, calculate late fines, and manage registered students.
+            </p>
+          </div>
+
+          <Link
+            href="/admin/rentals"
+            className="glass-btn-accent px-4 py-2 text-xs self-start md:self-auto shrink-0"
+          >
+            <BookMarked className="h-4 w-4 text-champagne-100" />
+            <span>Manage Students & Rentals</span>
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 pt-4">
+          <div className="liquid-well p-3.5">
+            <span className="text-[11px] uppercase font-semibold text-offwhite-400 block">
+              Active Issues
+            </span>
+            <p className="font-mono text-2xl font-bold text-offwhite-50 mt-1">
+              {rentalSummary.activeRentals}
+            </p>
+            <span className="text-[10px] text-offwhite-400">Books currently borrowed</span>
+          </div>
+
+          <div className="liquid-well p-3.5">
+            <span className="text-[11px] uppercase font-semibold text-offwhite-400 block">
+              Overdue Loans
+            </span>
+            <p
+              className={`font-mono text-2xl font-bold mt-1 ${
+                rentalSummary.overdueRentals > 0 ? 'text-rose-300' : 'text-offwhite-50'
+              }`}
+            >
+              {rentalSummary.overdueRentals}
+            </p>
+            <span className="text-[10px] text-rose-300/80">Past 7-day free deadline</span>
+          </div>
+
+          <div className="liquid-well p-3.5">
+            <span className="text-[11px] uppercase font-semibold text-offwhite-400 block">
+              Registered Students
+            </span>
+            <p className="font-mono text-2xl font-bold text-champagne-200 mt-1">
+              {rentalSummary.totalStudents}
+            </p>
+            <span className="text-[10px] text-offwhite-400">Student library accounts</span>
+          </div>
+
+          <div className="liquid-well p-3.5">
+            <span className="text-[11px] uppercase font-semibold text-offwhite-400 block">
+              Outstanding Fines
+            </span>
+            <p className="font-mono text-2xl font-bold text-champagne-100 mt-1">
+              ₹{rentalSummary.outstandingFines.toFixed(2)}
+            </p>
+            <span className="text-[10px] text-champagne-300/80">Late return penalties</span>
+          </div>
+        </div>
+      </section>
 
       {/* Main Content Split */}
       <div className="grid gap-6 lg:grid-cols-12">

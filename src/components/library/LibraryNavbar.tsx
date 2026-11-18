@@ -67,7 +67,14 @@ export function LibraryNavbar() {
               </Link>
             ))}
           </div>
-          <div className="ml-1.5">
+          <div className="ml-1.5 flex items-center gap-2">
+            <Link
+              href="/student/login"
+              className="glass-btn-accent px-3.5 py-2 text-xs"
+            >
+              <GraduationCap className="h-3.5 w-3.5 text-champagne-300" />
+              Student Portal
+            </Link>
             <Link href="/admin" className="glass-btn px-3.5 py-2 text-xs">
               <ShieldCheck className="h-3.5 w-3.5 text-champagne-300" />
               Admin Portal
@@ -105,11 +112,19 @@ export function LibraryNavbar() {
             </Link>
           ))}
           <Link
-            href="/admin"
+            href="/student/login"
             onClick={() => setMobileOpen(false)}
             className="glass-btn-accent mt-2 flex w-full justify-center py-2.5 text-sm"
           >
-            <ShieldCheck className="h-4 w-4 text-champagne-200" />
+            <GraduationCap className="h-4 w-4 text-champagne-200" />
+            Student Portal
+          </Link>
+          <Link
+            href="/admin"
+            onClick={() => setMobileOpen(false)}
+            className="glass-btn mt-2 flex w-full justify-center py-2.5 text-sm"
+          >
+            <ShieldCheck className="h-4 w-4 text-champagne-300" />
             Admin Portal
           </Link>
         </div>
