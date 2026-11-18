@@ -69,6 +69,12 @@ export function LibraryNavbar() {
           </div>
           <div className="ml-1.5 flex items-center gap-2">
             <Link
+              href="/login"
+              className="glass-btn px-3 py-2 text-xs"
+            >
+              Sign In
+            </Link>
+            <Link
               href="/student/login"
               className="glass-btn-accent px-3.5 py-2 text-xs"
             >
@@ -111,6 +117,13 @@ export function LibraryNavbar() {
               {item.label}
             </Link>
           ))}
+          <Link
+            href="/login"
+            onClick={() => setMobileOpen(false)}
+            className="glass-btn mt-2 flex w-full justify-center py-2.5 text-sm"
+          >
+            Sign In
+          </Link>
           <Link
             href="/student/login"
             onClick={() => setMobileOpen(false)}
