@@ -3,6 +3,7 @@ import { recordAuditLog, requireAdminApi } from '@/lib/auth/admin';
 import { getUploadLimits } from '@/lib/env';
 import { getAdminBookById } from '@/lib/queries/admin';
 import { mapBookWithCategory, type RawBookRow } from '@/lib/queries/mappers';
+import { invalidateLibraryCache } from '@/lib/queries/library';
 import { getSupabaseAdminClient } from '@/lib/supabase/admin';
 import {
   BOOK_COVERS_BUCKET,
@@ -245,6 +246,8 @@ export async function PATCH(
     },
   });
 
+  invalidateLibraryCache();
+
   return NextResponse.json({
     book: mapBookWithCategory(updatedBook as RawBookRow),
   });
@@ -298,6 +301,8 @@ export async function DELETE(
     targetId: id,
     details: { title: existingBook.title },
   });
+
+  invalidateLibraryCache();
 
   return NextResponse.json({ ok: true });
 }

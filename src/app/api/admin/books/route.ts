@@ -3,6 +3,7 @@ import { recordAuditLog, requireAdminApi } from '@/lib/auth/admin';
 import { getUploadLimits } from '@/lib/env';
 import { getAdminBooks } from '@/lib/queries/admin';
 import { mapBookWithCategory, type RawBookRow } from '@/lib/queries/mappers';
+import { invalidateLibraryCache } from '@/lib/queries/library';
 import { getSupabaseAdminClient } from '@/lib/supabase/admin';
 import {
   BOOK_COVERS_BUCKET,
@@ -170,6 +171,8 @@ export async function POST(request: NextRequest) {
     targetId: createdBook.id,
     details: { title: createdBook.title, file_type: createdBook.file_type },
   });
+
+  invalidateLibraryCache();
 
   return NextResponse.json(
     {

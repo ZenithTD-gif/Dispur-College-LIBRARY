@@ -74,6 +74,7 @@ export async function syncServerSideFineRecord(
     return_date?: string | null;
     status: string;
     fine_per_day: number;
+    fine_amount?: number;
     fine_paid?: boolean;
   }
 ): Promise<CalculatedFineResult> {
@@ -91,56 +92,62 @@ export async function syncServerSideFineRecord(
       ? 'overdue'
       : 'issued';
 
-  // 1. Update book_issues
-  await adminClient
-    .from('book_issues')
-    .update({
-      fine_amount: calc.fineAmount,
-      status: newStatus,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', issue.id);
+  const fineChanged = Math.abs(calc.fineAmount - Number(issue.fine_amount || 0)) > 0.001;
+  const statusChanged = newStatus !== issue.status;
 
-  // 2. Mirror update to book_rentals if row exists
-  await adminClient
-    .from('book_rentals')
-    .update({
-      fine_amount: calc.fineAmount,
-      status: newStatus,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', issue.id);
+  // Only perform database updates when values actually change (eliminates unnecessary DB writes on every view)
+  if (fineChanged || statusChanged) {
+    // 1. Update book_issues
+    await adminClient
+      .from('book_issues')
+      .update({
+        fine_amount: calc.fineAmount,
+        status: newStatus,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', issue.id);
 
-  // 3. Upsert fine_records audit row if overdue or fine exists
-  if (calc.fineAmount > 0) {
-    const { data: existingFine } = await adminClient
-      .from('fine_records')
-      .select('id')
-      .eq('issue_id', issue.id)
-      .maybeSingle();
+    // 2. Mirror update to book_rentals if row exists
+    await adminClient
+      .from('book_rentals')
+      .update({
+        fine_amount: calc.fineAmount,
+        status: newStatus,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', issue.id);
 
-    if (existingFine) {
-      await adminClient
+    // 3. Upsert fine_records audit row if overdue or fine exists
+    if (calc.fineAmount > 0) {
+      const { data: existingFine } = await adminClient
         .from('fine_records')
-        .update({
+        .select('id')
+        .eq('issue_id', issue.id)
+        .maybeSingle();
+
+      if (existingFine) {
+        await adminClient
+          .from('fine_records')
+          .update({
+            days_overdue: calc.overdueDays,
+            rate_per_day: issue.fine_per_day,
+            fine_amount: calc.fineAmount,
+            status: issue.fine_paid ? 'paid' : 'pending',
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existingFine.id);
+      } else {
+        await adminClient.from('fine_records').insert({
+          issue_id: issue.id,
+          student_id: issue.student_id,
+          book_id: issue.book_id,
           days_overdue: calc.overdueDays,
           rate_per_day: issue.fine_per_day,
           fine_amount: calc.fineAmount,
           status: issue.fine_paid ? 'paid' : 'pending',
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', existingFine.id);
-    } else {
-      await adminClient.from('fine_records').insert({
-        issue_id: issue.id,
-        student_id: issue.student_id,
-        book_id: issue.book_id,
-        days_overdue: calc.overdueDays,
-        rate_per_day: issue.fine_per_day,
-        fine_amount: calc.fineAmount,
-        status: issue.fine_paid ? 'paid' : 'pending',
-        calculated_at: new Date().toISOString(),
-      });
+          calculated_at: new Date().toISOString(),
+        });
+      }
     }
   }
 

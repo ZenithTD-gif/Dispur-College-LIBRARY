@@ -19,7 +19,7 @@ import { LiquidTiltCard } from '@/components/shared/LiquidTiltCard';
 import { SetupNotice } from '@/components/shared/SetupNotice';
 import { getLibraryHomeData } from '@/lib/queries/library';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export default async function LibraryHomePage() {
   const {

@@ -13,10 +13,36 @@ import type {
   CategoryWithCount,
 } from '@/types/library';
 
+interface CacheEntry<T> {
+  data: T;
+  expiresAt: number;
+}
+
+let categoriesCountCache: CacheEntry<{
+  configured: boolean;
+  categories: CategoryWithCount[];
+}> | null = null;
+
+let catalogFilterCache: CacheEntry<{
+  categoriesList: Array<{ id: string; slug: string; category_name: string }>;
+  subjects: string[];
+}> | null = null;
+
+const CACHE_TTL_MS = 60 * 1000; // 60-second in-memory cache
+
+export function invalidateLibraryCache() {
+  categoriesCountCache = null;
+  catalogFilterCache = null;
+}
+
 export async function getCategoriesWithCounts(): Promise<{
   configured: boolean;
   categories: CategoryWithCount[];
 }> {
+  if (categoriesCountCache && Date.now() < categoriesCountCache.expiresAt) {
+    return categoriesCountCache.data;
+  }
+
   const supabase = getSupabasePublicClient();
   if (!supabase) {
     return { configured: false, categories: [] };
@@ -31,13 +57,20 @@ export async function getCategoriesWithCounts(): Promise<{
     return { configured: true, categories: [] };
   }
 
-  return {
+  const result = {
     configured: true,
     categories: mapCategoriesWithCounts(
       catRows as Category[],
       bookCategoryRows as Array<{ category_id: string | null }> | null
     ),
   };
+
+  categoriesCountCache = {
+    data: result,
+    expiresAt: Date.now() + CACHE_TTL_MS,
+  };
+
+  return result;
 }
 
 export async function getLibraryHomeData(): Promise<{
@@ -112,22 +145,36 @@ export async function queryCatalogBooks(params: CatalogQueryParams): Promise<
   // Resolve category slug or UUID if provided, and gather distinct subjects + search matching categories
   const cleanSearch = params.q ? sanitizeSearchTerm(params.q) : '';
 
-  const [allCategoriesRes, allSubjectsRes] = await Promise.all([
-    supabase.from('categories').select('id, slug, category_name'),
-    supabase.from('books').select('subject').order('subject', { ascending: true }),
-  ]);
+  let categoriesList: Array<{ id: string; slug: string; category_name: string }>;
+  let subjects: string[];
 
-  const categoriesList = (allCategoriesRes.data ?? []) as Array<{
-    id: string;
-    slug: string;
-    category_name: string;
-  }>;
+  if (catalogFilterCache && Date.now() < catalogFilterCache.expiresAt) {
+    categoriesList = catalogFilterCache.data.categoriesList;
+    subjects = catalogFilterCache.data.subjects;
+  } else {
+    const [allCategoriesRes, allSubjectsRes] = await Promise.all([
+      supabase.from('categories').select('id, slug, category_name'),
+      supabase.from('books').select('subject').order('subject', { ascending: true }),
+    ]);
 
-  const subjectSet = new Set<string>();
-  for (const row of allSubjectsRes.data ?? []) {
-    if (row.subject && typeof row.subject === 'string') {
-      subjectSet.add(row.subject.trim());
+    categoriesList = (allCategoriesRes.data ?? []) as Array<{
+      id: string;
+      slug: string;
+      category_name: string;
+    }>;
+
+    const subjectSet = new Set<string>();
+    for (const row of allSubjectsRes.data ?? []) {
+      if (row.subject && typeof row.subject === 'string') {
+        subjectSet.add(row.subject.trim());
+      }
     }
+    subjects = Array.from(subjectSet);
+
+    catalogFilterCache = {
+      data: { categoriesList, subjects },
+      expiresAt: Date.now() + CACHE_TTL_MS,
+    };
   }
 
   let query = supabase
@@ -149,7 +196,7 @@ export async function queryCatalogBooks(params: CatalogQueryParams): Promise<
         page,
         limit,
         totalPages: 1,
-        subjects: Array.from(subjectSet),
+        subjects,
       };
     }
   }
@@ -214,7 +261,7 @@ export async function queryCatalogBooks(params: CatalogQueryParams): Promise<
       page,
       limit,
       totalPages: 1,
-      subjects: Array.from(subjectSet),
+      subjects,
     };
   }
 
@@ -228,7 +275,7 @@ export async function queryCatalogBooks(params: CatalogQueryParams): Promise<
     page,
     limit,
     totalPages,
-    subjects: Array.from(subjectSet),
+    subjects,
   };
 }
 

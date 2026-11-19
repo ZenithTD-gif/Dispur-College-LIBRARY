@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { recordAuditLog, requireAdminApi } from '@/lib/auth/admin';
 import { getAdminCategories } from '@/lib/queries/admin';
+import { invalidateLibraryCache } from '@/lib/queries/library';
 import { getSupabaseAdminClient } from '@/lib/supabase/admin';
 import { categorySchema, slugifyCategory } from '@/lib/validation';
 
@@ -77,6 +78,8 @@ export async function POST(request: NextRequest) {
     targetId: created.id,
     details: { category_name: created.category_name },
   });
+
+  invalidateLibraryCache();
 
   return NextResponse.json({ category: { ...created, book_count: 0 } }, { status: 201 });
 }

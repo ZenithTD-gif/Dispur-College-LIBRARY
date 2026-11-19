@@ -73,45 +73,52 @@ export async function GET() {
     );
   }
 
-  // 3. Re-calculate fines authoritatively on the server side
+  // 3. Re-calculate fines authoritatively on the server side in parallel
+  const fineSyncResults = await Promise.all(
+    (rawIssues || []).map(async (raw) => {
+      const ratePerDay = Number(raw.fine_per_day || settings.daily_fine_rate || 5.0);
+      const syncRes = await syncServerSideFineRecord(adminClient, {
+        id: raw.id,
+        student_id: raw.student_id,
+        book_id: raw.book_id,
+        issue_date: raw.issue_date,
+        due_date: raw.due_date,
+        return_date: raw.return_date,
+        status: raw.status,
+        fine_per_day: ratePerDay,
+        fine_amount: Number(raw.fine_amount || 0),
+        fine_paid: raw.fine_paid,
+      });
+
+      const bookObj = raw.book
+        ? {
+            ...raw.book,
+            cover_url: getPublicCoverUrl(raw.book.cover_image_path),
+          }
+        : null;
+
+      const rentalWithDetails: BookRentalWithDetails = {
+        ...raw,
+        daily_fine_rate_snapshot: ratePerDay,
+        fine_amount: syncRes.fineAmount,
+        book: bookObj,
+        remaining_days: syncRes.remainingDays,
+        overdue_days: syncRes.overdueDays,
+        calculated_fine: syncRes.fineAmount,
+        is_overdue: syncRes.isOverdue,
+        status: syncRes.status,
+      };
+
+      return { rentalWithDetails, syncRes, raw };
+    })
+  );
+
   const activeRentals: BookRentalWithDetails[] = [];
   const historyRentals: BookRentalWithDetails[] = [];
   let totalOutstandingFine = 0;
   let overdueLoanCount = 0;
 
-  for (const raw of rawIssues || []) {
-    const ratePerDay = Number(raw.fine_per_day || settings.daily_fine_rate || 5.0);
-    const syncRes = await syncServerSideFineRecord(adminClient, {
-      id: raw.id,
-      student_id: raw.student_id,
-      book_id: raw.book_id,
-      issue_date: raw.issue_date,
-      due_date: raw.due_date,
-      return_date: raw.return_date,
-      status: raw.status,
-      fine_per_day: ratePerDay,
-      fine_paid: raw.fine_paid,
-    });
-
-    const bookObj = raw.book
-      ? {
-          ...raw.book,
-          cover_url: getPublicCoverUrl(raw.book.cover_image_path),
-        }
-      : null;
-
-    const rentalWithDetails: BookRentalWithDetails = {
-      ...raw,
-      daily_fine_rate_snapshot: ratePerDay,
-      fine_amount: syncRes.fineAmount,
-      book: bookObj,
-      remaining_days: syncRes.remainingDays,
-      overdue_days: syncRes.overdueDays,
-      calculated_fine: syncRes.fineAmount,
-      is_overdue: syncRes.isOverdue,
-      status: syncRes.status,
-    };
-
+  for (const { rentalWithDetails, syncRes, raw } of fineSyncResults) {
     if (syncRes.status === 'issued' || syncRes.status === 'overdue') {
       activeRentals.push(rentalWithDetails);
       if (syncRes.isOverdue) {

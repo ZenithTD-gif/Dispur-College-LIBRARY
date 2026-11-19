@@ -20,8 +20,12 @@ export function LiquidTiltCard({
   const glowRef = useRef<HTMLDivElement | null>(null);
   const rafRef = useRef<number | null>(null);
   const pointerRef = useRef<{ x: number; y: number } | null>(null);
+  const canHoverRef = useRef<boolean>(true);
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      canHoverRef.current = window.matchMedia('(hover: hover)').matches;
+    }
     return () => {
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);
@@ -29,7 +33,15 @@ export function LiquidTiltCard({
     };
   }, []);
 
+  function handleMouseEnter() {
+    if (!canHoverRef.current) return;
+    if (cardRef.current) {
+      cardRef.current.style.willChange = 'transform';
+    }
+  }
+
   function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+    if (!canHoverRef.current) return;
     if (
       typeof window !== 'undefined' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -73,6 +85,7 @@ export function LiquidTiltCard({
     }
     if (cardRef.current) {
       cardRef.current.style.transform = RESET_TRANSFORM;
+      cardRef.current.style.willChange = 'auto';
     }
     if (glowRef.current) {
       glowRef.current.style.opacity = '0';
@@ -82,13 +95,14 @@ export function LiquidTiltCard({
   return (
     <div
       ref={cardRef}
+      onMouseEnter={handleMouseEnter}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       style={{
         transform: RESET_TRANSFORM,
         transformStyle: 'preserve-3d',
       }}
-      className={`relative will-change-transform transition-transform duration-300 ease-liquid ${className}`}
+      className={`relative transition-transform duration-300 ease-liquid ${className}`}
     >
       {/* Subtle dynamic glass specular reflection */}
       <div

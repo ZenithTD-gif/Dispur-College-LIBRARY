@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { recordAuditLog, requireAdminApi } from '@/lib/auth/admin';
+import { invalidateLibraryCache } from '@/lib/queries/library';
 import { getSupabaseAdminClient } from '@/lib/supabase/admin';
 import { categorySchema, isValidUuid, slugifyCategory } from '@/lib/validation';
 
@@ -78,6 +79,8 @@ export async function PATCH(
     details: { category_name: updated.category_name },
   });
 
+  invalidateLibraryCache();
+
   return NextResponse.json({ category: updated });
 }
 
@@ -134,6 +137,8 @@ export async function DELETE(
     targetId: id,
     details: { category_name: removed.category_name },
   });
+
+  invalidateLibraryCache();
 
   return NextResponse.json({ ok: true });
 }
