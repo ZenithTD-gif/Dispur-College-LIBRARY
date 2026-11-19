@@ -19,6 +19,7 @@ import {
   Library,
   Loader2,
   LogOut,
+  Mail,
   RefreshCw,
   Search,
   ShieldAlert,
@@ -1033,6 +1034,19 @@ export function StudentDashboardView({
                             </span>
                           </div>
                         )}
+                        <div className="flex items-center justify-between text-[11px] border-t border-offwhite-100/[0.08] pt-1.5 text-offwhite-400">
+                          <span className="flex items-center gap-1">
+                            <Mail className="h-3 w-3 text-champagne-300" />
+                            <span>Return Notice:</span>
+                          </span>
+                          <span className={rental.is_overdue ? 'text-rose-300' : rental.remaining_days <= 1 ? 'text-champagne-300 font-medium' : 'text-offwhite-300'}>
+                            {rental.is_overdue
+                              ? 'Overdue notice sent'
+                              : rental.remaining_days <= 1
+                              ? '24h email reminder active'
+                              : 'Auto-reminder set for 24h prior'}
+                          </span>
+                        </div>
                       </div>
 
                       {/* Action */}
@@ -1465,6 +1479,11 @@ export function StudentDashboardView({
                                 Fine: ₹{rental.calculated_fine.toFixed(2)}
                               </span>
                             )}
+
+                            <span className="glass-pill text-[10px] text-offwhite-300 flex items-center gap-1">
+                              <Mail className="h-2.5 w-2.5 text-champagne-300" />
+                              <span>{rental.is_overdue ? 'Notice Sent' : rental.remaining_days <= 1 ? 'Reminder Active' : '24h Reminder Set'}</span>
+                            </span>
                           </div>
                         </div>
                       </div>

@@ -9,15 +9,19 @@ import {
   Clock,
   Eye,
   Loader2,
+  Mail,
   PlusCircle,
   RefreshCw,
   RotateCcw,
   Search,
+  Send,
   User,
   X,
+  XCircle,
 } from 'lucide-react';
 import type {
   BookRentalWithDetails,
+  BookReturnReminder,
   LibrarySettings,
   RentalOverviewStats,
   Student,
@@ -43,12 +47,30 @@ export function RentalsManager({
   initialStudents: (Student & { active_loans: number; total_loans: number; unpaid_fines: number })[];
   booksList: BookItem[];
 }) {
-  const [activeTab, setActiveTab] = useState<'active' | 'history' | 'students' | 'availability' | 'settings'>('active');
+  const [activeTab, setActiveTab] = useState<
+    'active' | 'history' | 'students' | 'availability' | 'settings' | 'reminders'
+  >('active');
 
   const [rentals, setRentals] = useState<BookRentalWithDetails[]>(initialRentals);
   const [stats, setStats] = useState<RentalOverviewStats>(initialStats);
   const [settings, setSettings] = useState<LibrarySettings>(initialSettings);
   const [students, setStudents] = useState(initialStudents);
+
+  // Reminders State
+  const [reminderLogs, setReminderLogs] = useState<BookReturnReminder[]>([]);
+  const [reminderStats, setReminderStats] = useState({
+    total: 0,
+    sent: 0,
+    failed: 0,
+    skipped: 0,
+    pending: 0,
+  });
+  const [loadingReminders, setLoadingReminders] = useState(false);
+  const [triggeringReminders, setTriggeringReminders] = useState(false);
+  const [reminderNotice, setReminderNotice] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
 
   // Search & Filters
   const [rentalSearch, setRentalSearch] = useState('');
@@ -134,6 +156,8 @@ export function RentalsManager({
   useEffect(() => {
     if (activeTab === 'availability') {
       loadAvailability();
+    } else if (activeTab === 'reminders') {
+      loadReminderLogs();
     }
   }, [activeTab]);
 
@@ -149,6 +173,71 @@ export function RentalsManager({
       // Ignore
     } finally {
       setLoadingAvailability(false);
+    }
+  }
+
+  async function loadReminderLogs() {
+    setLoadingReminders(true);
+    try {
+      const res = await fetch('/api/admin/reminders?limit=100', { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        setReminderLogs(data.logs || []);
+        if (data.stats) {
+          setReminderStats(data.stats);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load reminder logs:', err);
+    } finally {
+      setLoadingReminders(false);
+    }
+  }
+
+  async function handleRunReminderCheck() {
+    setTriggeringReminders(true);
+    setReminderNotice(null);
+    try {
+      const res = await fetch('/api/admin/reminders', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setReminderNotice({
+          type: 'success',
+          message: data.message || 'Automated reminder scan completed.',
+        });
+        await loadReminderLogs();
+      } else {
+        setReminderNotice({
+          type: 'error',
+          message: data.error || 'Failed to complete reminder scan.',
+        });
+      }
+    } catch (err) {
+      setReminderNotice({
+        type: 'error',
+        message: err instanceof Error ? err.message : 'Error executing reminder check.',
+      });
+    } finally {
+      setTriggeringReminders(false);
+    }
+  }
+
+  function formatKolkataDateTime(dateInput: string | Date | null | undefined): string {
+    if (!dateInput) return '-';
+    try {
+      const d = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+      if (isNaN(d.getTime())) return String(dateInput);
+      return new Intl.DateTimeFormat('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      }).format(d) + ' IST';
+    } catch {
+      return String(dateInput);
     }
   }
 
@@ -590,6 +679,24 @@ export function RentalsManager({
           }`}
         >
           Settings & Fine Rate
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('reminders')}
+          className={`rounded-full px-4 py-2 text-xs font-semibold transition-all duration-300 flex items-center gap-1.5 ${
+            activeTab === 'reminders'
+              ? 'border border-champagne-300/40 bg-gradient-to-r from-maroon-800/80 to-burgundy-700/75 text-offwhite-50 shadow-card'
+              : 'text-offwhite-300 hover:bg-offwhite-100/[0.08] hover:text-white'
+          }`}
+        >
+          <Mail className="h-3.5 w-3.5 text-champagne-300" />
+          <span>Return Reminders</span>
+          {reminderStats.failed > 0 && (
+            <span className="ml-1 rounded-full bg-rose-500/80 px-1.5 py-0.2 text-[10px] text-white">
+              {reminderStats.failed}
+            </span>
+          )}
         </button>
       </div>
 
@@ -1215,6 +1322,205 @@ export function RentalsManager({
           </form>
         </div>
       )}
+
+      {/* ======================================================================= */}
+      {/* TAB 6: Automated Book Return Reminders */}
+      {/* ======================================================================= */}
+      {activeTab === 'reminders' && (
+        <div className="space-y-6">
+          {/* Header & Action Bar */}
+          <div className="liquid-panel p-6 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-offwhite-100/[0.1] pb-4">
+              <div>
+                <h3 className="font-serif text-lg font-bold text-offwhite-50 flex items-center gap-2">
+                  <Mail className="h-5 w-5 text-champagne-300" />
+                  <span>Automated Book Return Reminders</span>
+                </h3>
+                <p className="text-xs text-offwhite-400 mt-1">
+                  Background 24-hour advance return deadline dispatcher powered by Resend Email API and Supabase Cron.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={loadReminderLogs}
+                  disabled={loadingReminders}
+                  className="glass-btn-secondary px-3 py-2 text-xs font-semibold flex items-center gap-1.5"
+                  title="Refresh logs from database"
+                >
+                  <RefreshCw className={`h-3.5 w-3.5 ${loadingReminders ? 'animate-spin' : ''}`} />
+                  <span>Refresh</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleRunReminderCheck}
+                  disabled={triggeringReminders}
+                  className="glass-btn-primary px-4 py-2 text-xs font-semibold flex items-center gap-1.5"
+                >
+                  {triggeringReminders ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      <span>Scanning Issues...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-3.5 w-3.5 text-champagne-300" />
+                      <span>Run Reminder Check Now</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Notification Alert */}
+            {reminderNotice && (
+              <div
+                role="alert"
+                className={`rounded-2xl border p-4 text-xs backdrop-blur-xl flex items-start gap-2 ${
+                  reminderNotice.type === 'success'
+                    ? 'border-emerald-400/45 bg-emerald-700/20 text-emerald-200'
+                    : 'border-wine-400/45 bg-wine-700/20 text-rose-200'
+                }`}
+              >
+                {reminderNotice.type === 'success' ? (
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-300 mt-0.5" />
+                ) : (
+                  <AlertCircle className="h-4 w-4 shrink-0 text-rose-300 mt-0.5" />
+                )}
+                <p className="leading-relaxed">{reminderNotice.message}</p>
+              </div>
+            )}
+
+            {/* Metrics cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+              <div className="rounded-xl border border-offwhite-100/[0.08] bg-charcoal-900/60 p-3">
+                <div className="text-[11px] uppercase tracking-wider text-offwhite-400 font-medium">Total Logged</div>
+                <div className="font-serif text-xl font-bold text-offwhite-50 mt-1">{reminderStats.total}</div>
+              </div>
+              <div className="rounded-xl border border-emerald-500/20 bg-emerald-950/20 p-3">
+                <div className="text-[11px] uppercase tracking-wider text-emerald-300 font-medium">Delivered (Sent)</div>
+                <div className="font-serif text-xl font-bold text-emerald-200 mt-1">{reminderStats.sent}</div>
+              </div>
+              <div className="rounded-xl border border-rose-500/20 bg-rose-950/20 p-3">
+                <div className="text-[11px] uppercase tracking-wider text-rose-300 font-medium">Failed</div>
+                <div className="font-serif text-xl font-bold text-rose-200 mt-1">{reminderStats.failed}</div>
+              </div>
+              <div className="rounded-xl border border-amber-500/20 bg-amber-950/20 p-3">
+                <div className="text-[11px] uppercase tracking-wider text-amber-300 font-medium">Skipped (Idempotent)</div>
+                <div className="font-serif text-xl font-bold text-amber-200 mt-1">{reminderStats.skipped}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Logs Table */}
+          <div className="liquid-panel p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h4 className="font-serif text-sm font-bold text-offwhite-50">
+                Recent Email Notification Audit Trail
+              </h4>
+              <span className="text-[11px] text-offwhite-400">
+                Timezone: Asia/Kolkata (IST)
+              </span>
+            </div>
+
+            {loadingReminders && reminderLogs.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center text-offwhite-400 space-y-2">
+                <Loader2 className="h-6 w-6 animate-spin text-champagne-300" />
+                <p className="text-xs">Loading reminder audit trail...</p>
+              </div>
+            ) : reminderLogs.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-offwhite-100/[0.15] p-8 text-center text-offwhite-400 space-y-2">
+                <Mail className="h-8 w-8 mx-auto text-offwhite-500" />
+                <p className="text-xs font-medium">No reminder records logged yet.</p>
+                <p className="text-[11px] text-offwhite-500 max-w-md mx-auto">
+                  Click &ldquo;Run Reminder Check Now&rdquo; to scan active borrowing issues and dispatch 24-hour advance notices.
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto rounded-2xl border border-offwhite-100/[0.1] bg-charcoal-900/40">
+                <table className="w-full text-left text-xs text-offwhite-200">
+                  <thead className="border-b border-offwhite-100/[0.1] bg-charcoal-900/80 text-[11px] uppercase tracking-wider text-offwhite-400">
+                    <tr>
+                      <th className="px-4 py-3 font-semibold">Student & Recipient</th>
+                      <th className="px-4 py-3 font-semibold">Book Title</th>
+                      <th className="px-4 py-3 font-semibold">Return Due Date</th>
+                      <th className="px-4 py-3 font-semibold">Status</th>
+                      <th className="px-4 py-3 font-semibold">Sent At (IST)</th>
+                      <th className="px-4 py-3 font-semibold">Delivery Reference / Details</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-offwhite-100/[0.06]">
+                    {reminderLogs.map((log) => {
+                      const isSent = log.status === 'sent';
+                      const isFailed = log.status === 'failed';
+                      const isSkipped = log.status === 'skipped';
+
+                      return (
+                        <tr key={log.id} className="hover:bg-offwhite-100/[0.03] transition-colors">
+                          <td className="px-4 py-3">
+                            <div className="font-semibold text-offwhite-50">{log.student_name}</div>
+                            <div className="text-[11px] text-offwhite-400">{log.recipient_email}</div>
+                          </td>
+                          <td className="px-4 py-3 font-medium text-offwhite-100 max-w-xs truncate">
+                            {log.book_title}
+                          </td>
+                          <td className="px-4 py-3 font-medium text-rose-300">
+                            {formatKolkataDateTime(log.due_date)}
+                          </td>
+                          <td className="px-4 py-3">
+                            {isSent && (
+                              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/40 bg-emerald-500/20 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-200">
+                                <CheckCircle2 className="h-3 w-3" />
+                                <span>Sent</span>
+                              </span>
+                            )}
+                            {isFailed && (
+                              <span className="inline-flex items-center gap-1 rounded-full border border-rose-400/40 bg-rose-500/20 px-2.5 py-0.5 text-[10px] font-semibold text-rose-200">
+                                <XCircle className="h-3 w-3" />
+                                <span>Failed {log.retry_count > 0 ? `(${log.retry_count})` : ''}</span>
+                              </span>
+                            )}
+                            {isSkipped && (
+                              <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/40 bg-amber-500/20 px-2.5 py-0.5 text-[10px] font-semibold text-amber-200">
+                                <Clock className="h-3 w-3" />
+                                <span>Skipped</span>
+                              </span>
+                            )}
+                            {!isSent && !isFailed && !isSkipped && (
+                              <span className="inline-flex items-center gap-1 rounded-full border border-sky-400/40 bg-sky-500/20 px-2.5 py-0.5 text-[10px] font-semibold text-sky-200">
+                                <span>Pending</span>
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-[11px] text-offwhite-300">
+                            {log.sent_at ? formatKolkataDateTime(log.sent_at) : '-'}
+                          </td>
+                          <td className="px-4 py-3 text-[11px] text-offwhite-400 max-w-xs truncate">
+                            {isSent && log.email_id ? (
+                              <span className="font-mono text-[10px] text-emerald-300/80">
+                                ID: {log.email_id}
+                              </span>
+                            ) : isFailed && log.last_error ? (
+                              <span className="text-rose-300/90" title={log.last_error}>
+                                Error: {log.last_error}
+                              </span>
+                            ) : (
+                              <span className="text-offwhite-500">-</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
 
       {/* ======================================================================= */}
       {/* MODAL 1: Issue Book to Student */}
