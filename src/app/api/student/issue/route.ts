@@ -197,37 +197,60 @@ export async function POST(request: NextRequest) {
 
     // System A: Send Automatic Book Issue Confirmation Email immediately
     try {
-      if (student.email) {
-        const emailResult = await sendBookIssueConfirmationEmail({
-          recipientEmail: student.email,
-          studentName: student.full_name,
-          bookTitle: b.title,
-          bookId: b.id,
-          issueId: issueRecord.id,
-          issueDate: issueRecord.issue_date,
-          dueDate: issueRecord.due_date,
-        });
+      let recipientEmail = student.email?.trim() || '';
+      if (!recipientEmail) {
+        const { data: authUserData } = await adminClient.auth.admin.getUserById(student.id);
+        if (authUserData?.user?.email) {
+          recipientEmail = authUserData.user.email.trim();
+        }
+      }
 
-        await adminClient.from('book_return_reminders').insert({
-          issue_id: issueRecord.id,
-          student_id: student.id,
-          book_id: b.id,
-          due_date: issueRecord.due_date,
-          reminder_type: 'BOOK_ISSUE_CONFIRMATION',
-          status: emailResult.success ? 'sent' : 'failed',
-          recipient_email: student.email,
-          student_name: student.full_name,
-          book_title: b.title,
-          email_id: emailResult.emailId || null,
-          sent_at: emailResult.success ? new Date().toISOString() : null,
-          last_error: emailResult.error || null,
-          retry_count: emailResult.success ? 0 : 1,
-          metadata: {
-            provider: emailResult.provider,
-            isSandboxRestricted: emailResult.isSandboxRestricted || false,
-            issuedByStudent: true,
-          },
-        });
+      if (recipientEmail) {
+        // Prevent duplicate emails when a request is retried
+        const { data: existingConfirmation } = await adminClient
+          .from('book_return_reminders')
+          .select('id, status, email_id')
+          .eq('issue_id', issueRecord.id)
+          .eq('due_date', issueRecord.due_date)
+          .eq('reminder_type', 'BOOK_ISSUE_CONFIRMATION')
+          .maybeSingle();
+
+        if (!existingConfirmation || existingConfirmation.status !== 'sent') {
+          const emailResult = await sendBookIssueConfirmationEmail({
+            recipientEmail,
+            studentName: student.full_name,
+            bookTitle: b.title,
+            bookId: b.id,
+            issueId: issueRecord.id,
+            studentId: student.id,
+            issueDate: issueRecord.issue_date,
+            dueDate: issueRecord.due_date,
+          });
+
+          await adminClient.from('book_return_reminders').upsert(
+            {
+              issue_id: issueRecord.id,
+              student_id: student.id,
+              book_id: b.id,
+              due_date: issueRecord.due_date,
+              reminder_type: 'BOOK_ISSUE_CONFIRMATION',
+              status: emailResult.success ? 'sent' : 'failed',
+              recipient_email: recipientEmail,
+              student_name: student.full_name,
+              book_title: b.title,
+              email_id: emailResult.emailId || null,
+              sent_at: emailResult.success ? new Date().toISOString() : null,
+              last_error: emailResult.error || null,
+              retry_count: emailResult.success ? 0 : 1,
+              metadata: {
+                provider: emailResult.provider,
+                isSandboxRestricted: emailResult.isSandboxRestricted || false,
+                issuedByStudent: true,
+              },
+            },
+            { onConflict: 'issue_id,due_date,reminder_type' }
+          );
+        }
       }
     } catch (emailErr) {
       console.error('[StudentIssue] Non-blocking error dispatching issue confirmation email:', emailErr);

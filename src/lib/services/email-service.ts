@@ -17,6 +17,7 @@ export interface SendIssueConfirmationParams {
   bookTitle: string;
   bookId: string;
   issueId: string;
+  studentId?: string;
   issueDate: string | Date;
   dueDate: string | Date;
 }
@@ -513,6 +514,8 @@ async function dispatchEmail(params: {
 
 /**
  * SYSTEM A: Dispatches immediate Book Issue Confirmation Email.
+ * Attempts Supabase Edge Function execution first; seamlessly falls back
+ * to direct server-side Resend SDK dispatch if Edge Function is not yet deployed.
  */
 export async function sendBookIssueConfirmationEmail(
   params: SendIssueConfirmationParams
@@ -523,6 +526,49 @@ export async function sendBookIssueConfirmationEmail(
   const issueDateFormatted = formatToKolkataDateTime(params.issueDate, false);
   const dueDateFormatted = formatToKolkataDateTime(params.dueDate, true);
 
+  // 1. Attempt invocation via Supabase Edge Function (send-book-reminders)
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  const serviceKey =
+    process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (supabaseUrl && serviceKey) {
+    try {
+      const edgeUrl = `${supabaseUrl.replace(/\/+$/, '')}/functions/v1/send-book-reminders`;
+      const edgeRes = await fetch(edgeUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${serviceKey}`,
+        },
+        body: JSON.stringify({
+          action: 'confirm_issue',
+          issueId: params.issueId,
+          studentId: params.studentId,
+          bookId: params.bookId,
+          recipientEmail: params.recipientEmail,
+          studentName: params.studentName,
+          bookTitle: params.bookTitle,
+          issueDate: params.issueDate,
+          dueDate: params.dueDate,
+        }),
+      });
+
+      if (edgeRes.ok) {
+        const edgeData = await edgeRes.json();
+        if (edgeData.success) {
+          return {
+            success: true,
+            emailId: edgeData.emailId,
+            provider: 'resend',
+          };
+        }
+      }
+    } catch {
+      // Non-blocking fallback to direct server dispatch
+    }
+  }
+
+  // 2. Direct server-side Resend SDK dispatch fallback
   const subject = 'Book Issued Successfully – Dispur College Department Library';
 
   const text = generateIssueConfirmationPlainText({

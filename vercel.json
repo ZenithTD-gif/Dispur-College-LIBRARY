@@ -8,6 +8,12 @@
     "src/app/api/books/[id]/download/route.ts": {
       "maxDuration": 30
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/reminders",
+      "schedule": "30 3 * * *"
+    }
+  ]
 }
 
