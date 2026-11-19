@@ -177,7 +177,7 @@ export default async function BookDetailsPage({
                   </div>
 
                   {/* Physical Copy Rental Availability */}
-                  {activeLoan ? (
+                  {((book.available_copies ?? 1) <= 0 && activeLoan) ? (
                     <div className="rounded-2xl border border-champagne-300/30 bg-maroon-950/40 p-4 backdrop-blur-xl">
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-champagne-300" />
@@ -186,7 +186,7 @@ export default async function BookDetailsPage({
                         </span>
                       </div>
                       <p className="mt-1 text-xs text-offwhite-300">
-                        This physical copy is currently checked out by a student. Due back on{' '}
+                        All physical copies are currently checked out. Due back on{' '}
                         <span className="font-semibold text-champagne-200">
                           {new Date(activeLoan.due_date).toLocaleDateString('en-IN')}
                         </span>
@@ -198,7 +198,7 @@ export default async function BookDetailsPage({
                       <div className="flex items-center gap-2">
                         <CheckCircle2 className="h-4 w-4 text-emerald-400" />
                         <span className="text-xs font-semibold text-emerald-200">
-                          Physical Department Copy: Available for Borrowing
+                          Physical Department Copy: Available for Borrowing ({book.available_copies ?? 1} available)
                         </span>
                       </div>
                       <p className="mt-1 text-xs text-offwhite-300">

@@ -3,6 +3,10 @@ import { requireStudentApi } from '@/lib/auth/student';
 import { recordAuditLog } from '@/lib/auth/admin';
 import { getSupabaseAdminClient } from '@/lib/supabase/admin';
 import { isValidUuid } from '@/lib/validation';
+import {
+  getAndSyncBookAvailability,
+  syncBookInventory,
+} from '@/lib/services/inventory-service';
 
 export const dynamic = 'force-dynamic';
 
@@ -114,13 +118,13 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Check available copies
+  // Check authoritative available copies
   for (const b of books) {
-    const available = b.available_copies !== undefined ? b.available_copies : 1;
-    if (available <= 0) {
+    const avail = await getAndSyncBookAvailability(adminClient, b.id);
+    if (!avail.isAvailable || avail.availableCopies <= 0) {
       return NextResponse.json(
         {
-          error: `"${b.title}" is currently out of stock. All copies have been issued to other students.`,
+          error: `"${b.title}" is currently out of stock. All ${avail.totalCopies} copy/copies have been issued to other students.`,
         },
         { status: 400 }
       );
@@ -187,15 +191,8 @@ export async function POST(request: NextRequest) {
       fine_paid: false,
     });
 
-    // Decrement available copies
-    const newAvailable = Math.max(0, (b.available_copies ?? 1) - 1);
-    await adminClient
-      .from('books')
-      .update({
-        available_copies: newAvailable,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', b.id);
+    // Synchronize available copies authoritatively
+    await syncBookInventory(adminClient, b.id);
 
     createdIssues.push(issueRecord);
   }

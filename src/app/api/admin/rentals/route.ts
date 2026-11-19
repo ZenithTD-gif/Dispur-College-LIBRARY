@@ -7,6 +7,10 @@ import {
   issueBookSchema,
   sanitizeSearchTerm,
 } from '@/lib/validation';
+import {
+  getAndSyncBookAvailability,
+  syncBookInventory,
+} from '@/lib/services/inventory-service';
 import type {
   BookRentalWithDetails,
   LibrarySettings,
@@ -276,55 +280,88 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 4. Verify book is not already issued
-  const { data: existingRental } = await adminClient
+  // 4. Verify this student does not already have this book currently issued
+  const { data: existingStudentRental } = await adminClient
     .from('book_rentals')
-    .select('id, student:students(full_name), due_date')
+    .select('id, due_date')
     .eq('book_id', bookId)
+    .eq('student_id', studentId)
     .eq('status', 'issued')
     .maybeSingle();
 
-  if (existingRental) {
-    const studentName =
-      (existingRental.student as { full_name?: string } | null)?.full_name || 'a student';
-    const dueDateStr = new Date(existingRental.due_date).toLocaleDateString('en-IN');
+  if (existingStudentRental) {
+    const dueDateStr = new Date(existingStudentRental.due_date).toLocaleDateString('en-IN');
     return NextResponse.json(
       {
-        error: `This book is currently issued to ${studentName} (Due on: ${dueDateStr}). A book cannot be re-issued until it is returned.`,
+        error: `This book is already currently issued to ${student.full_name} (Due on: ${dueDateStr}). A student cannot borrow duplicate copies of the same book simultaneously.`,
       },
       { status: 409 }
     );
   }
 
-  // 5. Calculate issue and due dates
+  // 5. Verify authoritative inventory availability
+  const availability = await getAndSyncBookAvailability(adminClient, bookId);
+  if (!availability.isAvailable || availability.availableCopies <= 0) {
+    return NextResponse.json(
+      {
+        error: `"${book.title}" is currently out of stock (0 of ${availability.totalCopies} copies available). Please wait until a copy is returned.`,
+      },
+      { status: 409 }
+    );
+  }
+
+  // 6. Calculate issue and due dates
   const issueDateTime = issueDate ? new Date(issueDate) : new Date();
   const dueDateTime = new Date(issueDateTime.getTime() + periodDays * 24 * 60 * 60 * 1000);
+  const loanId = crypto.randomUUID();
 
-  // 6. Insert new rental record
+  // 7. Insert new rental and issue records atomically
+  const loanPayload = {
+    id: loanId,
+    student_id: studentId,
+    book_id: bookId,
+    issue_date: issueDateTime.toISOString(),
+    due_date: dueDateTime.toISOString(),
+    status: 'issued',
+    fine_amount: 0.0,
+    fine_paid: false,
+    notes: notes || null,
+  };
+
   const { data: newRental, error: insertError } = await adminClient
     .from('book_rentals')
     .insert({
-      student_id: studentId,
-      book_id: bookId,
-      issue_date: issueDateTime.toISOString(),
-      due_date: dueDateTime.toISOString(),
-      status: 'issued',
+      ...loanPayload,
       daily_fine_rate_snapshot: dailyFineRate,
-      fine_amount: 0.0,
-      fine_paid: false,
-      notes: notes || null,
       issued_by: admin.id,
     })
     .select('*')
     .single();
 
   if (insertError || !newRental) {
-    console.error('Failed to issue book:', insertError);
+    console.error('Failed to issue book in book_rentals:', insertError);
     return NextResponse.json(
       { error: 'Database error issuing book. Please try again.' },
       { status: 500 }
     );
   }
+
+  // Mirror into book_issues so student dashboard sees it
+  const { error: issueInsertError } = await adminClient
+    .from('book_issues')
+    .insert({
+      ...loanPayload,
+      issue_duration_days: periodDays,
+      fine_per_day: dailyFineRate,
+      issued_by: admin.id,
+    });
+
+  if (issueInsertError) {
+    console.error('Failed to mirror issue into book_issues:', issueInsertError);
+  }
+
+  // Synchronize and update available copies
+  const updatedAvailable = await syncBookInventory(adminClient, bookId);
 
   // 7. Audit log
   await recordAuditLog({
@@ -350,6 +387,7 @@ export async function POST(request: NextRequest) {
       ok: true,
       message: `"${book.title}" successfully issued to ${student.full_name}. Due on ${dueDateTime.toLocaleDateString('en-IN')}.`,
       rental: newRental,
+      availableCopies: updatedAvailable,
     },
     { status: 201 }
   );
