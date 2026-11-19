@@ -2,33 +2,52 @@
  * Dispur College - Department of Professional Studies Digital Library
  * Email Notification Service (Powered by Resend Email API)
  *
+ * Implements:
+ * 1. System A: Automatic Book Issue Confirmation Email
+ * 2. System B: Automatic 24-Hour Return Warning Email
+ *
  * Strictly formats all dates and timestamps in Asia/Kolkata (IST: UTC+05:30).
  */
 
 import { Resend } from 'resend';
 
-export interface SendReminderEmailParams {
+export interface SendIssueConfirmationParams {
   recipientEmail: string;
   studentName: string;
   bookTitle: string;
+  bookId: string;
   issueId: string;
-  bookId?: string;
+  issueDate: string | Date;
+  dueDate: string | Date;
+}
+
+export interface SendReturnWarningParams {
+  recipientEmail: string;
+  studentName: string;
+  bookTitle: string;
+  bookId: string;
+  issueId: string;
   issueDate: string | Date;
   dueDate: string | Date;
   finePerDay?: number;
-  department?: string;
 }
 
-export interface SendReminderEmailResult {
+// Backward-compatible alias
+export type SendReminderEmailParams = SendReturnWarningParams;
+
+export interface SendEmailResult {
   success: boolean;
   emailId?: string | null;
   error?: string | null;
   skipped?: boolean;
   provider: 'resend' | 'simulation';
+  isSandboxRestricted?: boolean;
 }
 
+export type SendReminderEmailResult = SendEmailResult;
+
 /**
- * Format date in Asia/Kolkata timezone with human-readable formatting.
+ * Format date in Asia/Kolkata timezone (IST: UTC+05:30).
  */
 export function formatToKolkataDateTime(
   dateInput: string | Date,
@@ -62,167 +81,100 @@ export function formatToKolkataDateTime(
   }
 }
 
-/**
- * Generates responsive, institutional HTML email for book return reminders.
- */
-export function generateReminderEmailHtml(params: {
+// ============================================================================
+// SYSTEM A: BOOK ISSUE CONFIRMATION TEMPLATES
+// ============================================================================
+
+export function generateIssueConfirmationPlainText(params: {
   studentName: string;
   bookTitle: string;
-  issueId: string;
-  bookId?: string;
-  formattedIssueDate: string;
-  formattedDueDate: string;
-  finePerDay: number;
+  bookId: string;
+  issueDate: string;
+  dueDate: string;
+}): string {
+  const { studentName, bookTitle, bookId, issueDate, dueDate } = params;
+
+  return `Dear ${studentName},
+
+Congratulations!
+
+Your book has been successfully issued from the Dispur College Department Library.
+
+Book Details:
+
+* Student Name: ${studentName}
+* Book Title: ${bookTitle}
+* Book ID: ${bookId}
+* Issue Date: ${issueDate}
+* Return Deadline: ${dueDate}
+* Status: Successfully Issued
+
+Please return your book on or before the specified deadline.
+
+Late returns may attract a fine according to the existing department library rules.
+
+Regards,
+Department Library
+Dispur College
+`;
+}
+
+export function generateIssueConfirmationHtml(params: {
+  studentName: string;
+  bookTitle: string;
+  bookId: string;
+  issueDate: string;
+  dueDate: string;
   portalUrl: string;
 }): string {
-  const {
-    studentName,
-    bookTitle,
-    issueId,
-    formattedIssueDate,
-    formattedDueDate,
-    finePerDay,
-    portalUrl,
-  } = params;
+  const { studentName, bookTitle, bookId, issueDate, dueDate, portalUrl } = params;
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Library Book Return Reminder</title>
+  <title>Book Issued Successfully</title>
   <style>
     body {
-      margin: 0;
-      padding: 0;
-      background-color: #f1f5f9;
+      margin: 0; padding: 0; background-color: #f1f5f9;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       color: #1e293b;
-      -webkit-font-smoothing: antialiased;
     }
-    .wrapper {
-      width: 100%;
-      background-color: #f1f5f9;
-      padding: 32px 16px;
-    }
+    .wrapper { width: 100%; background-color: #f1f5f9; padding: 32px 16px; }
     .container {
-      max-width: 600px;
-      margin: 0 auto;
-      background-color: #ffffff;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      max-width: 600px; margin: 0 auto; background-color: #ffffff;
+      border-radius: 12px; overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
       border: 1px solid #e2e8f0;
     }
     .header {
       background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
-      color: #ffffff;
-      padding: 32px 24px;
-      text-align: center;
+      color: #ffffff; padding: 28px 24px; text-align: center;
     }
-    .header h1 {
-      margin: 0;
-      font-size: 20px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
+    .header h1 { margin: 0; font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .header p { margin: 6px 0 0; font-size: 13px; color: #93c5fd; }
+    .badge {
+      background-color: #ecfdf5; border-bottom: 2px solid #10b981;
+      padding: 10px 24px; text-align: center; font-size: 13px; font-weight: 600; color: #047857;
     }
-    .header p {
-      margin: 8px 0 0;
-      font-size: 13px;
-      color: #93c5fd;
-      letter-spacing: 0.3px;
+    .content { padding: 28px 24px; }
+    .details-box {
+      background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
+      padding: 18px; margin: 20px 0;
     }
-    .banner {
-      background-color: #fef3c7;
-      border-bottom: 2px solid #f59e0b;
-      padding: 12px 24px;
-      text-align: center;
-      font-size: 14px;
-      font-weight: 600;
-      color: #92400e;
-    }
-    .content {
-      padding: 32px 28px;
-    }
-    .greeting {
-      font-size: 16px;
-      font-weight: 600;
-      color: #0f172a;
-      margin: 0 0 16px;
-    }
-    .paragraph {
-      font-size: 14px;
-      line-height: 1.6;
-      color: #475569;
-      margin: 0 0 20px;
-    }
-    .details-card {
-      background-color: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 20px;
-      margin: 24px 0;
-    }
-    .details-table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    .details-table td {
-      padding: 8px 4px;
-      font-size: 14px;
-      vertical-align: top;
-    }
-    .details-table .label {
-      color: #64748b;
-      font-weight: 500;
-      width: 38%;
-    }
-    .details-table .value {
-      color: #0f172a;
-      font-weight: 600;
-    }
-    .highlight-due {
-      color: #dc2626 !important;
-      font-weight: 700 !important;
-    }
-    .instructions-box {
-      background-color: #eff6ff;
-      border-left: 4px solid #3b82f6;
-      border-radius: 0 8px 8px 0;
-      padding: 14px 18px;
-      margin: 24px 0;
-      font-size: 13px;
-      line-height: 1.6;
-      color: #1e40af;
-    }
-    .cta-container {
-      text-align: center;
-      margin: 32px 0 16px;
-    }
-    .cta-button {
-      display: inline-block;
-      background-color: #2563eb;
-      color: #ffffff !important;
-      font-size: 14px;
-      font-weight: 600;
-      text-decoration: none;
-      padding: 12px 28px;
-      border-radius: 6px;
-      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+    .details-table { width: 100%; border-collapse: collapse; }
+    .details-table td { padding: 6px 4px; font-size: 13px; vertical-align: top; }
+    .details-table .label { color: #64748b; font-weight: 500; width: 36%; }
+    .details-table .value { color: #0f172a; font-weight: 600; }
+    .btn {
+      display: inline-block; background-color: #2563eb; color: #ffffff !important;
+      font-size: 13px; font-weight: 600; text-decoration: none; padding: 10px 24px;
+      border-radius: 6px; margin: 16px 0 8px;
     }
     .footer {
-      background-color: #f8fafc;
-      border-top: 1px solid #e2e8f0;
-      padding: 24px;
-      text-align: center;
-      font-size: 12px;
-      color: #64748b;
-      line-height: 1.6;
-    }
-    .footer a {
-      color: #2563eb;
-      text-decoration: none;
+      background-color: #f8fafc; border-top: 1px solid #e2e8f0;
+      padding: 20px; text-align: center; font-size: 12px; color: #64748b;
     }
   </style>
 </head>
@@ -233,68 +185,62 @@ export function generateReminderEmailHtml(params: {
         <h1>Dispur College</h1>
         <p>Department of Professional Studies &bull; Digital Library</p>
       </div>
-
-      <div class="banner">
-        &bull; 24-Hour Return Deadline Notice &bull;
+      <div class="badge">
+        &check; Book Issued Successfully
       </div>
-
       <div class="content">
-        <p class="greeting">Dear ${studentName},</p>
-        <p class="paragraph">
-          This is an automated reminder from the Dispur College Digital Library. According to our borrowing records, you have an issued book whose return deadline is approaching within the next <strong>24 hours</strong>.
+        <p style="font-size: 15px; font-weight: 600; margin: 0 0 12px;">Dear ${studentName},</p>
+        <p style="font-size: 14px; color: #334155; margin: 0 0 16px;">
+          Congratulations!<br>
+          Your book has been successfully issued from the Dispur College Department Library.
         </p>
 
-        <div class="details-card">
+        <div class="details-box">
           <table class="details-table">
+            <tr>
+              <td class="label">Student Name:</td>
+              <td class="value">${studentName}</td>
+            </tr>
             <tr>
               <td class="label">Book Title:</td>
               <td class="value">${bookTitle}</td>
             </tr>
             <tr>
-              <td class="label">Issue Reference:</td>
-              <td class="value" style="font-family: monospace; font-size: 13px;">${issueId.substring(0, 8)}...</td>
+              <td class="label">Book ID:</td>
+              <td class="value" style="font-family: monospace;">${bookId}</td>
             </tr>
             <tr>
-              <td class="label">Date of Issue:</td>
-              <td class="value">${formattedIssueDate}</td>
+              <td class="label">Issue Date:</td>
+              <td class="value">${issueDate}</td>
             </tr>
             <tr>
-              <td class="label">Return Due Date:</td>
-              <td class="value highlight-due">${formattedDueDate}</td>
+              <td class="label">Return Deadline:</td>
+              <td class="value" style="color: #b91c1c;">${dueDate}</td>
             </tr>
             <tr>
-              <td class="label">Overdue Fine Rate:</td>
-              <td class="value">&#8377;${finePerDay.toFixed(2)} / day after due date</td>
+              <td class="label">Status:</td>
+              <td class="value" style="color: #047857;">Successfully Issued</td>
             </tr>
           </table>
         </div>
 
-        <div class="instructions-box">
-          <strong>Important Return Instructions:</strong><br>
-          &bull; Please return or renew this book at the Department Library circulation desk before the deadline.<br>
-          &bull; Ensure the book is returned in good condition without markings or tears.<br>
-          &bull; Under library rules, a late return fee of &#8377;${finePerDay.toFixed(2)} per day is automatically applied starting the day after the due date.
+        <p style="font-size: 13px; color: #475569; margin: 0 0 16px; line-height: 1.5;">
+          Please return your book on or before the specified deadline.<br>
+          Late returns may attract a fine according to the existing department library rules.
+        </p>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <a href="${portalUrl}" class="btn">View in Student Dashboard</a>
         </div>
 
-        <div class="cta-container">
-          <a href="${portalUrl}" class="cta-button">View My Issued Books in Dashboard</a>
-        </div>
-
-        <p class="paragraph" style="margin-top: 24px; font-size: 13px; color: #64748b;">
-          If you have already handed over the book to the library staff today, please allow a short time for our team to record the physical return in the system.
+        <p style="font-size: 13px; color: #334155; margin: 24px 0 0;">
+          Regards,<br>
+          <strong>Department Library</strong><br>
+          Dispur College
         </p>
       </div>
-
       <div class="footer">
-        <p style="margin: 0 0 6px; font-weight: 600; color: #334155;">
-          Dispur College Library Management System
-        </p>
-        <p style="margin: 0 0 6px;">
-          Ganeshguri, Guwahati - 781006, Assam, India
-        </p>
-        <p style="margin: 0;">
-          Need assistance? Contact us at <a href="mailto:library@dispurcollege.ac.in">library@dispurcollege.ac.in</a>
-        </p>
+        Dispur College Digital Library &bull; Ganeshguri, Guwahati - 781006, Assam
       </div>
     </div>
   </div>
@@ -302,134 +248,250 @@ export function generateReminderEmailHtml(params: {
 </html>`;
 }
 
-/**
- * Generates clean plain text fallback for accessibility and spam protection.
- */
-export function generateReminderEmailPlainText(params: {
+// ============================================================================
+// SYSTEM B: 24-HOUR RETURN WARNING TEMPLATES
+// ============================================================================
+
+export function generateReturnWarningPlainText(params: {
+  studentName: string;
+  bookTitle: string;
+  bookId: string;
+  issueDate: string;
+  dueDate: string;
+}): string {
+  const { studentName, bookTitle, bookId, issueDate, dueDate } = params;
+
+  return `Dear ${studentName},
+
+This is an important reminder from the Dispur College Department Library.
+
+Your book return deadline is approaching.
+
+Book Details:
+
+* Book Title: ${bookTitle}
+* Book ID: ${bookId}
+* Issue Date: ${issueDate}
+* Return Deadline: ${dueDate}
+
+Please submit your book to the Department Library within the next 24 hours.
+
+Failure to return the book within the permitted deadline may result in a fine according to the existing department library rules.
+
+Thank you.
+
+Department Library
+Dispur College
+`;
+}
+
+export function generateReturnWarningHtml(params: {
+  studentName: string;
+  bookTitle: string;
+  bookId: string;
+  issueDate: string;
+  dueDate: string;
+  portalUrl: string;
+}): string {
+  const { studentName, bookTitle, bookId, issueDate, dueDate, portalUrl } = params;
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Return Deadline Reminder</title>
+  <style>
+    body {
+      margin: 0; padding: 0; background-color: #f1f5f9;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: #1e293b;
+    }
+    .wrapper { width: 100%; background-color: #f1f5f9; padding: 32px 16px; }
+    .container {
+      max-width: 600px; margin: 0 auto; background-color: #ffffff;
+      border-radius: 12px; overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+      border: 1px solid #e2e8f0;
+    }
+    .header {
+      background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+      color: #ffffff; padding: 28px 24px; text-align: center;
+    }
+    .header h1 { margin: 0; font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .header p { margin: 6px 0 0; font-size: 13px; color: #93c5fd; }
+    .banner {
+      background-color: #fef3c7; border-bottom: 2px solid #f59e0b;
+      padding: 10px 24px; text-align: center; font-size: 13px; font-weight: 600; color: #92400e;
+    }
+    .content { padding: 28px 24px; }
+    .details-box {
+      background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
+      padding: 18px; margin: 20px 0;
+    }
+    .details-table { width: 100%; border-collapse: collapse; }
+    .details-table td { padding: 6px 4px; font-size: 13px; vertical-align: top; }
+    .details-table .label { color: #64748b; font-weight: 500; width: 36%; }
+    .details-table .value { color: #0f172a; font-weight: 600; }
+    .btn {
+      display: inline-block; background-color: #2563eb; color: #ffffff !important;
+      font-size: 13px; font-weight: 600; text-decoration: none; padding: 10px 24px;
+      border-radius: 6px; margin: 16px 0 8px;
+    }
+    .footer {
+      background-color: #f8fafc; border-top: 1px solid #e2e8f0;
+      padding: 20px; text-align: center; font-size: 12px; color: #64748b;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="container">
+      <div class="header">
+        <h1>Dispur College</h1>
+        <p>Department of Professional Studies &bull; Digital Library</p>
+      </div>
+      <div class="banner">
+        &bull; 24-Hour Return Warning: Deadline Tomorrow &bull;
+      </div>
+      <div class="content">
+        <p style="font-size: 15px; font-weight: 600; margin: 0 0 12px;">Dear ${studentName},</p>
+        <p style="font-size: 14px; color: #334155; margin: 0 0 16px;">
+          This is an important reminder from the Dispur College Department Library.<br>
+          Your book return deadline is approaching.
+        </p>
+
+        <div class="details-box">
+          <table class="details-table">
+            <tr>
+              <td class="label">Book Title:</td>
+              <td class="value">${bookTitle}</td>
+            </tr>
+            <tr>
+              <td class="label">Book ID:</td>
+              <td class="value" style="font-family: monospace;">${bookId}</td>
+            </tr>
+            <tr>
+              <td class="label">Issue Date:</td>
+              <td class="value">${issueDate}</td>
+            </tr>
+            <tr>
+              <td class="label">Return Deadline:</td>
+              <td class="value" style="color: #b91c1c; font-weight: 700;">${dueDate}</td>
+            </tr>
+          </table>
+        </div>
+
+        <p style="font-size: 13px; color: #475569; margin: 0 0 16px; line-height: 1.5;">
+          Please submit your book to the Department Library within the next 24 hours.<br>
+          Failure to return the book within the permitted deadline may result in a fine according to the existing department library rules.
+        </p>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <a href="${portalUrl}" class="btn">View Loan in Dashboard</a>
+        </div>
+
+        <p style="font-size: 13px; color: #334155; margin: 24px 0 0;">
+          Thank you.<br><br>
+          <strong>Department Library</strong><br>
+          Dispur College
+        </p>
+      </div>
+      <div class="footer">
+        Dispur College Digital Library &bull; Ganeshguri, Guwahati - 781006, Assam
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
+// Backward compatible aliases for existing tests
+export const generateReminderEmailHtml = (params: {
   studentName: string;
   bookTitle: string;
   issueId: string;
+  bookId?: string;
   formattedIssueDate: string;
   formattedDueDate: string;
   finePerDay: number;
   portalUrl: string;
-}): string {
-  const {
-    studentName,
-    bookTitle,
-    issueId,
-    formattedIssueDate,
-    formattedDueDate,
-    finePerDay,
-    portalUrl,
-  } = params;
+}) =>
+  generateReturnWarningHtml({
+    studentName: params.studentName,
+    bookTitle: params.bookTitle,
+    bookId: params.bookId || params.issueId,
+    issueDate: params.formattedIssueDate,
+    dueDate: params.formattedDueDate,
+    portalUrl: params.portalUrl,
+  });
 
-  return `DISPUR COLLEGE - DIGITAL LIBRARY
-DEPARTMENT OF PROFESSIONAL STUDIES
-============================================================
-BOOK RETURN DEADLINE REMINDER (24-HOUR NOTICE)
-============================================================
+export const generateReminderEmailPlainText = (params: {
+  studentName: string;
+  bookTitle: string;
+  issueId: string;
+  bookId?: string;
+  formattedIssueDate: string;
+  formattedDueDate: string;
+  finePerDay: number;
+  portalUrl: string;
+}) =>
+  generateReturnWarningPlainText({
+    studentName: params.studentName,
+    bookTitle: params.bookTitle,
+    bookId: params.bookId || params.issueId,
+    issueDate: params.formattedIssueDate,
+    dueDate: params.formattedDueDate,
+  });
 
-Dear ${studentName},
+// ============================================================================
+// CORE DISPATCHER ENGINE
+// ============================================================================
 
-This is an automated reminder that your issued library book is due for return within the next 24 hours.
-
-LOAN DETAILS:
-------------------------------------------------------------
-Book Title:      ${bookTitle}
-Issue Reference: ${issueId}
-Issue Date:      ${formattedIssueDate}
-Due Date:        ${formattedDueDate}
-Late Fine Rate:  Rs. ${finePerDay.toFixed(2)} per day
-
-RETURN INSTRUCTIONS:
-------------------------------------------------------------
-1. Please bring the book to the Department Library circulation counter on or before the due date.
-2. Under library borrowing rules, overdue fines accrue automatically at Rs. ${finePerDay.toFixed(2)} per day after the due date.
-3. If you have already returned this book today, please disregard this notice while our catalog status updates.
-
-Access your library dashboard:
-${portalUrl}
-
-============================================================
-Dispur College Library
-Ganeshguri, Guwahati - 781006, Assam, India
-Email: library@dispurcollege.ac.in
-`;
-}
-
-/**
- * Dispatches an automated book return reminder email via Resend.
- * Gracefully logs and skips if RESEND_API_KEY is not configured.
- */
-export async function sendBookReturnReminderEmail(
-  params: SendReminderEmailParams
-): Promise<SendReminderEmailResult> {
+async function dispatchEmail(params: {
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+}): Promise<SendEmailResult> {
   const apiKey = process.env.RESEND_API_KEY?.trim();
   const fromEmail =
     process.env.RESEND_FROM_EMAIL?.trim() ||
     'Dispur College Library <onboarding@resend.dev>';
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() || 'http://localhost:3000';
-  const portalUrl = `${siteUrl.replace(/\/+$/, '')}/dashboard`;
 
-  const formattedIssueDate = formatToKolkataDateTime(params.issueDate, false);
-  const formattedDueDate = formatToKolkataDateTime(params.dueDate, true);
-  const finePerDay = params.finePerDay ?? 5.0;
-
-  const subject = 'Important: Your Library Book Return Deadline Is Approaching';
-
-  // 1. Check if RESEND_API_KEY is present
   if (!apiKey) {
     console.warn(
-      `[EmailService] RESEND_API_KEY not set. Simulating reminder email delivery to: ${params.recipientEmail}`
+      `[EmailService] RESEND_API_KEY not configured. Simulating delivery to: ${params.to}`
     );
     return {
       success: true,
-      emailId: `sim_${Date.now()}_${params.issueId.substring(0, 8)}`,
+      emailId: `sim_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       skipped: true,
       provider: 'simulation',
     };
   }
 
-  // 2. Format HTML & Plaintext
-  const html = generateReminderEmailHtml({
-    studentName: params.studentName,
-    bookTitle: params.bookTitle,
-    issueId: params.issueId,
-    bookId: params.bookId,
-    formattedIssueDate,
-    formattedDueDate,
-    finePerDay,
-    portalUrl,
-  });
-
-  const text = generateReminderEmailPlainText({
-    studentName: params.studentName,
-    bookTitle: params.bookTitle,
-    issueId: params.issueId,
-    formattedIssueDate,
-    formattedDueDate,
-    finePerDay,
-    portalUrl,
-  });
-
-  // 3. Dispatch via Resend SDK
   try {
     const resend = new Resend(apiKey);
     const { data, error } = await resend.emails.send({
       from: fromEmail,
-      to: params.recipientEmail,
-      subject,
-      html,
-      text,
+      to: params.to,
+      subject: params.subject,
+      html: params.html,
+      text: params.text,
     });
 
     if (error) {
       console.error('[EmailService] Resend API error:', error);
+      const isSandboxRestricted =
+        error.message?.includes('testing emails to your own email address') ||
+        error.name === 'validation_error';
+
       return {
         success: false,
-        error: error.message || 'Failed to send email via Resend API',
+        error: error.message || 'Resend API dispatch failed',
         provider: 'resend',
+        isSandboxRestricted,
       };
     }
 
@@ -440,7 +502,7 @@ export async function sendBookReturnReminderEmail(
     };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    console.error('[EmailService] Exception while sending reminder email:', message);
+    console.error('[EmailService] Exception dispatching email:', message);
     return {
       success: false,
       error: message,
@@ -448,3 +510,84 @@ export async function sendBookReturnReminderEmail(
     };
   }
 }
+
+/**
+ * SYSTEM A: Dispatches immediate Book Issue Confirmation Email.
+ */
+export async function sendBookIssueConfirmationEmail(
+  params: SendIssueConfirmationParams
+): Promise<SendEmailResult> {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() || 'http://localhost:3000';
+  const portalUrl = `${siteUrl.replace(/\/+$/, '')}/student/dashboard`;
+
+  const issueDateFormatted = formatToKolkataDateTime(params.issueDate, false);
+  const dueDateFormatted = formatToKolkataDateTime(params.dueDate, true);
+
+  const subject = 'Book Issued Successfully – Dispur College Department Library';
+
+  const text = generateIssueConfirmationPlainText({
+    studentName: params.studentName,
+    bookTitle: params.bookTitle,
+    bookId: params.bookId,
+    issueDate: issueDateFormatted,
+    dueDate: dueDateFormatted,
+  });
+
+  const html = generateIssueConfirmationHtml({
+    studentName: params.studentName,
+    bookTitle: params.bookTitle,
+    bookId: params.bookId,
+    issueDate: issueDateFormatted,
+    dueDate: dueDateFormatted,
+    portalUrl,
+  });
+
+  return dispatchEmail({
+    to: params.recipientEmail,
+    subject,
+    html,
+    text,
+  });
+}
+
+/**
+ * SYSTEM B: Dispatches 24-Hour Return Warning Email.
+ */
+export async function sendBookReturnWarningEmail(
+  params: SendReturnWarningParams
+): Promise<SendEmailResult> {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() || 'http://localhost:3000';
+  const portalUrl = `${siteUrl.replace(/\/+$/, '')}/student/dashboard`;
+
+  const issueDateFormatted = formatToKolkataDateTime(params.issueDate, false);
+  const dueDateFormatted = formatToKolkataDateTime(params.dueDate, true);
+
+  const subject = 'Reminder: Your Library Book Return Deadline Is Tomorrow';
+
+  const text = generateReturnWarningPlainText({
+    studentName: params.studentName,
+    bookTitle: params.bookTitle,
+    bookId: params.bookId,
+    issueDate: issueDateFormatted,
+    dueDate: dueDateFormatted,
+  });
+
+  const html = generateReturnWarningHtml({
+    studentName: params.studentName,
+    bookTitle: params.bookTitle,
+    bookId: params.bookId,
+    issueDate: issueDateFormatted,
+    dueDate: dueDateFormatted,
+    portalUrl,
+  });
+
+  return dispatchEmail({
+    to: params.recipientEmail,
+    subject,
+    html,
+    text,
+  });
+}
+
+// Backward-compatible alias
+export const sendBookReturnReminderEmail = sendBookReturnWarningEmail;

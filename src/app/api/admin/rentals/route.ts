@@ -11,6 +11,7 @@ import {
   getAndSyncBookAvailability,
   syncBookInventory,
 } from '@/lib/services/inventory-service';
+import { sendBookIssueConfirmationEmail } from '@/lib/services/email-service';
 import type {
   BookRentalWithDetails,
   LibrarySettings,
@@ -232,7 +233,7 @@ export async function POST(request: NextRequest) {
   // 2. Verify student exists and is active
   const { data: student, error: studentError } = await adminClient
     .from('students')
-    .select('id, full_name, registration_number, college_roll_number, is_active')
+    .select('id, full_name, registration_number, college_roll_number, email, is_active')
     .eq('id', studentId)
     .maybeSingle();
 
@@ -362,6 +363,44 @@ export async function POST(request: NextRequest) {
 
   // Synchronize and update available copies
   const updatedAvailable = await syncBookInventory(adminClient, bookId);
+
+  // System A: Send Automatic Book Issue Confirmation Email immediately
+  try {
+    if (student.email) {
+      const emailResult = await sendBookIssueConfirmationEmail({
+        recipientEmail: student.email,
+        studentName: student.full_name,
+        bookTitle: book.title,
+        bookId: book.id,
+        issueId: newRental.id,
+        issueDate: issueDateTime.toISOString(),
+        dueDate: dueDateTime.toISOString(),
+      });
+
+      await adminClient.from('book_return_reminders').insert({
+        issue_id: newRental.id,
+        student_id: student.id,
+        book_id: book.id,
+        due_date: dueDateTime.toISOString(),
+        reminder_type: 'BOOK_ISSUE_CONFIRMATION',
+        status: emailResult.success ? 'sent' : 'failed',
+        recipient_email: student.email,
+        student_name: student.full_name,
+        book_title: book.title,
+        email_id: emailResult.emailId || null,
+        sent_at: emailResult.success ? new Date().toISOString() : null,
+        last_error: emailResult.error || null,
+        retry_count: emailResult.success ? 0 : 1,
+        metadata: {
+          provider: emailResult.provider,
+          isSandboxRestricted: emailResult.isSandboxRestricted || false,
+          issuedByAdmin: true,
+        },
+      });
+    }
+  } catch (emailErr) {
+    console.error('[AdminRentals] Non-blocking error dispatching issue confirmation email:', emailErr);
+  }
 
   // 7. Audit log
   await recordAuditLog({

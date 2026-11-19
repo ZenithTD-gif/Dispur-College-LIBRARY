@@ -7,6 +7,7 @@ import {
   getAndSyncBookAvailability,
   syncBookInventory,
 } from '@/lib/services/inventory-service';
+import { sendBookIssueConfirmationEmail } from '@/lib/services/email-service';
 
 export const dynamic = 'force-dynamic';
 
@@ -193,6 +194,44 @@ export async function POST(request: NextRequest) {
 
     // Synchronize available copies authoritatively
     await syncBookInventory(adminClient, b.id);
+
+    // System A: Send Automatic Book Issue Confirmation Email immediately
+    try {
+      if (student.email) {
+        const emailResult = await sendBookIssueConfirmationEmail({
+          recipientEmail: student.email,
+          studentName: student.full_name,
+          bookTitle: b.title,
+          bookId: b.id,
+          issueId: issueRecord.id,
+          issueDate: issueRecord.issue_date,
+          dueDate: issueRecord.due_date,
+        });
+
+        await adminClient.from('book_return_reminders').insert({
+          issue_id: issueRecord.id,
+          student_id: student.id,
+          book_id: b.id,
+          due_date: issueRecord.due_date,
+          reminder_type: 'BOOK_ISSUE_CONFIRMATION',
+          status: emailResult.success ? 'sent' : 'failed',
+          recipient_email: student.email,
+          student_name: student.full_name,
+          book_title: b.title,
+          email_id: emailResult.emailId || null,
+          sent_at: emailResult.success ? new Date().toISOString() : null,
+          last_error: emailResult.error || null,
+          retry_count: emailResult.success ? 0 : 1,
+          metadata: {
+            provider: emailResult.provider,
+            isSandboxRestricted: emailResult.isSandboxRestricted || false,
+            issuedByStudent: true,
+          },
+        });
+      }
+    } catch (emailErr) {
+      console.error('[StudentIssue] Non-blocking error dispatching issue confirmation email:', emailErr);
+    }
 
     createdIssues.push(issueRecord);
   }

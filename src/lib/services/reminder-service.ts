@@ -129,7 +129,7 @@ export async function processDueSoonReminders(
   }
 
   // 3. Process each eligible issue with idempotency protection
-  const reminderType: ReminderType = 'due_soon_24h';
+  const reminderType: ReminderType = 'BOOK_RETURN_REMINDER';
 
   for (const issue of eligibleIssues) {
     summary.processedCount++;
@@ -138,13 +138,13 @@ export async function processDueSoonReminders(
     const bookTitle = book?.title || 'Library Book';
     const bookId = issue.book_id;
 
-    // A. Check for existing reminder record for this issue, due_date and reminder_type
+    // A. Check for existing reminder record for this issue, due_date and return reminder types
     const { data: existingReminder } = await supabaseAdmin
       .from('book_return_reminders')
       .select('*')
       .eq('issue_id', issue.id)
       .eq('due_date', issue.due_date)
-      .eq('reminder_type', reminderType)
+      .in('reminder_type', ['BOOK_RETURN_REMINDER', 'due_soon_24h'])
       .maybeSingle<BookReturnReminder>();
 
     // If already sent successfully, skip (idempotency guarantee)
@@ -276,6 +276,10 @@ export async function processDueSoonReminders(
             sent_at: new Date().toISOString(),
             last_error: null,
             retry_count: newRetryCount,
+            metadata: {
+              provider: emailResult.provider,
+              isSandboxRestricted: emailResult.isSandboxRestricted || false,
+            },
             updated_at: new Date().toISOString(),
           })
           .eq('id', existingReminder.id);
@@ -293,6 +297,10 @@ export async function processDueSoonReminders(
           email_id: emailResult.emailId,
           sent_at: new Date().toISOString(),
           retry_count: 0,
+          metadata: {
+            provider: emailResult.provider,
+            isSandboxRestricted: emailResult.isSandboxRestricted || false,
+          },
         });
       }
     } else {
@@ -316,6 +324,10 @@ export async function processDueSoonReminders(
             status: 'failed',
             last_error: emailResult.error,
             retry_count: newRetryCount,
+            metadata: {
+              provider: emailResult.provider,
+              isSandboxRestricted: emailResult.isSandboxRestricted || false,
+            },
             updated_at: new Date().toISOString(),
           })
           .eq('id', existingReminder.id);
@@ -332,6 +344,10 @@ export async function processDueSoonReminders(
           book_title: bookTitle,
           last_error: emailResult.error,
           retry_count: 1,
+          metadata: {
+            provider: emailResult.provider,
+            isSandboxRestricted: emailResult.isSandboxRestricted || false,
+          },
         });
       }
     }

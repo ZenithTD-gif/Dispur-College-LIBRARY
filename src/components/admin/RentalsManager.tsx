@@ -1334,10 +1334,10 @@ export function RentalsManager({
               <div>
                 <h3 className="font-serif text-lg font-bold text-offwhite-50 flex items-center gap-2">
                   <Mail className="h-5 w-5 text-champagne-300" />
-                  <span>Automated Book Return Reminders</span>
+                  <span>Email Notifications & Return Reminders</span>
                 </h3>
                 <p className="text-xs text-offwhite-400 mt-1">
-                  Background 24-hour advance return deadline dispatcher powered by Resend Email API and Supabase Cron.
+                  Automatic Book Issue Confirmations (System A) and 24-Hour Return Warnings (System B) powered by Resend Email API and Supabase Cron.
                 </p>
               </div>
 
@@ -1444,6 +1444,7 @@ export function RentalsManager({
                   <thead className="border-b border-offwhite-100/[0.1] bg-charcoal-900/80 text-[11px] uppercase tracking-wider text-offwhite-400">
                     <tr>
                       <th className="px-4 py-3 font-semibold">Student & Recipient</th>
+                      <th className="px-4 py-3 font-semibold">Type</th>
                       <th className="px-4 py-3 font-semibold">Book Title</th>
                       <th className="px-4 py-3 font-semibold">Return Due Date</th>
                       <th className="px-4 py-3 font-semibold">Status</th>
@@ -1456,12 +1457,24 @@ export function RentalsManager({
                       const isSent = log.status === 'sent';
                       const isFailed = log.status === 'failed';
                       const isSkipped = log.status === 'skipped';
+                      const isIssueConfirmation = log.reminder_type === 'BOOK_ISSUE_CONFIRMATION';
 
                       return (
                         <tr key={log.id} className="hover:bg-offwhite-100/[0.03] transition-colors">
                           <td className="px-4 py-3">
                             <div className="font-semibold text-offwhite-50">{log.student_name}</div>
                             <div className="text-[11px] text-offwhite-400">{log.recipient_email}</div>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            {isIssueConfirmation ? (
+                              <span className="inline-flex items-center gap-1 rounded-full border border-purple-400/40 bg-purple-500/20 px-2.5 py-0.5 text-[10px] font-semibold text-purple-200">
+                                <span>Issue Confirmation</span>
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/40 bg-amber-500/20 px-2.5 py-0.5 text-[10px] font-semibold text-amber-200">
+                                <span>24h Return Warning</span>
+                              </span>
+                            )}
                           </td>
                           <td className="px-4 py-3 font-medium text-offwhite-100 max-w-xs truncate">
                             {log.book_title}
@@ -1497,15 +1510,22 @@ export function RentalsManager({
                           <td className="px-4 py-3 text-[11px] text-offwhite-300">
                             {log.sent_at ? formatKolkataDateTime(log.sent_at) : '-'}
                           </td>
-                          <td className="px-4 py-3 text-[11px] text-offwhite-400 max-w-xs truncate">
+                          <td className="px-4 py-3 text-[11px] text-offwhite-400 max-w-xs">
                             {isSent && log.email_id ? (
                               <span className="font-mono text-[10px] text-emerald-300/80">
                                 ID: {log.email_id}
                               </span>
                             ) : isFailed && log.last_error ? (
-                              <span className="text-rose-300/90" title={log.last_error}>
-                                Error: {log.last_error}
-                              </span>
+                              <div className="space-y-1">
+                                <span className="text-rose-300/90 block truncate" title={log.last_error}>
+                                  {log.last_error}
+                                </span>
+                                {(log.metadata?.isSandboxRestricted || log.last_error.includes('testing emails to your own email address')) && (
+                                  <span className="inline-block text-[9px] text-amber-300/90 bg-amber-950/40 border border-amber-600/30 px-1.5 py-0.5 rounded">
+                                    Resend Sandbox restriction
+                                  </span>
+                                )}
+                              </div>
                             ) : (
                               <span className="text-offwhite-500">-</span>
                             )}

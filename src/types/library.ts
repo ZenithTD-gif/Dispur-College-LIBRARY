@@ -244,8 +244,12 @@ export interface FineRecord {
   updated_at: string;
 }
 
-export type ReminderType = 'due_soon_24h' | 'overdue_alert';
-export type ReminderStatus = 'pending' | 'sent' | 'failed' | 'skipped';
+export type ReminderType =
+  | 'BOOK_ISSUE_CONFIRMATION'
+  | 'BOOK_RETURN_REMINDER'
+  | 'due_soon_24h'
+  | 'overdue_alert';
+export type ReminderStatus = 'pending' | 'sent' | 'failed' | 'skipped' | 'accepted';
 
 export interface BookReturnReminder {
   id: string;

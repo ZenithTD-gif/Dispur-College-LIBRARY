@@ -141,7 +141,7 @@ Deno.serve(async (req: Request) => {
         .select('*')
         .eq('issue_id', issue.id)
         .eq('due_date', issue.due_date)
-        .eq('reminder_type', 'due_soon_24h')
+        .in('reminder_type', ['BOOK_RETURN_REMINDER', 'due_soon_24h'])
         .maybeSingle();
 
       if (existing && existing.status === 'sent') {
@@ -214,29 +214,70 @@ Deno.serve(async (req: Request) => {
         const emailPayload = {
           from: fromEmail,
           to: studentEmail,
-          subject: 'Important: Your Library Book Return Deadline Is Approaching',
-          html: `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
-            <div style="background-color: #1e3a8a; color: white; padding: 20px; text-align: center; border-radius: 6px;">
-              <h2 style="margin: 0;">Dispur College Digital Library</h2>
-              <p style="margin: 5px 0 0; font-size: 13px;">Department of Professional Studies</p>
-            </div>
-            <div style="padding: 20px 10px;">
-              <p>Dear <strong>${studentName}</strong>,</p>
-              <p>This is a 24-hour advance notice that your borrowed library book return deadline is approaching.</p>
-              <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 6px; margin: 15px 0;">
-                <p style="margin: 4px 0;"><strong>Book Title:</strong> ${bookTitle}</p>
-                <p style="margin: 4px 0;"><strong>Issue Date:</strong> ${formattedIssueDate}</p>
-                <p style="margin: 4px 0; color: #dc2626;"><strong>Return Deadline:</strong> ${formattedDueDate}</p>
-                <p style="margin: 4px 0;"><strong>Overdue Fine:</strong> &#8377;${finePerDay.toFixed(2)}/day after deadline</p>
-              </div>
-              <p>Please return the book to the library counter before the deadline to avoid late fines.</p>
-              <p><a href="${siteUrl}/dashboard" style="display: inline-block; background: #2563eb; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">View Dashboard</a></p>
-            </div>
-            <div style="font-size: 12px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 15px; text-align: center;">
-              Dispur College Library &bull; Ganeshguri, Guwahati - 781006, Assam
-            </div>
-          </div>`,
-          text: `Dispur College Digital Library\nImportant: Book Return Deadline Approaching\n\nDear ${studentName},\n\nYour borrowed book "${bookTitle}" is due for return on ${formattedDueDate}.\nPlease return the book to the library counter on or before the due date.\n\nDispur College Library, Guwahati, Assam`,
+          subject: 'Reminder: Your Library Book Return Deadline Is Tomorrow',
+          html: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Book Return Deadline Reminder</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b;">
+  <div style="width: 100%; background-color: #f1f5f9; padding: 32px 16px;">
+    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0;">
+      <div style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); color: #ffffff; padding: 28px 24px; text-align: center;">
+        <h1 style="margin: 0; font-size: 20px; font-weight: 700; text-transform: uppercase;">Dispur College</h1>
+        <p style="margin: 6px 0 0; font-size: 13px; color: #93c5fd;">Department of Professional Studies &bull; Digital Library</p>
+      </div>
+      <div style="background-color: #fef3c7; border-bottom: 2px solid #f59e0b; padding: 10px 24px; text-align: center; font-size: 13px; font-weight: 600; color: #92400e;">
+        &bull; 24-Hour Return Warning: Deadline Tomorrow &bull;
+      </div>
+      <div style="padding: 28px 24px;">
+        <p style="font-size: 15px; font-weight: 600; margin: 0 0 12px;">Dear ${studentName},</p>
+        <p style="font-size: 14px; color: #334155; margin: 0 0 16px;">
+          This is an important reminder from the Dispur College Department Library.<br>
+          Your book return deadline is approaching.
+        </p>
+        <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; margin: 20px 0;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 6px 4px; font-size: 13px; color: #64748b; font-weight: 500; width: 36%;">Book Title:</td>
+              <td style="padding: 6px 4px; font-size: 13px; color: #0f172a; font-weight: 600;">${bookTitle}</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 4px; font-size: 13px; color: #64748b; font-weight: 500;">Book ID:</td>
+              <td style="padding: 6px 4px; font-size: 13px; color: #0f172a; font-weight: 600; font-family: monospace;">${issue.book_id}</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 4px; font-size: 13px; color: #64748b; font-weight: 500;">Issue Date:</td>
+              <td style="padding: 6px 4px; font-size: 13px; color: #0f172a; font-weight: 600;">${formattedIssueDate}</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 4px; font-size: 13px; color: #64748b; font-weight: 500;">Return Deadline:</td>
+              <td style="padding: 6px 4px; font-size: 13px; color: #b91c1c; font-weight: 700;">${formattedDueDate}</td>
+            </tr>
+          </table>
+        </div>
+        <p style="font-size: 13px; color: #475569; margin: 0 0 16px; line-height: 1.5;">
+          Please submit your book to the Department Library within the next 24 hours.<br>
+          Failure to return the book within the permitted deadline may result in a fine according to the existing department library rules.
+        </p>
+        <div style="text-align: center; margin: 20px 0;">
+          <a href="${siteUrl}/student/dashboard" style="display: inline-block; background-color: #2563eb; color: #ffffff; font-size: 13px; font-weight: 600; text-decoration: none; padding: 10px 24px; border-radius: 6px;">View Loan in Dashboard</a>
+        </div>
+        <p style="font-size: 13px; color: #334155; margin: 24px 0 0;">
+          Thank you.<br><br>
+          <strong>Department Library</strong><br>
+          Dispur College
+        </p>
+      </div>
+      <div style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 20px; text-align: center; font-size: 12px; color: #64748b;">
+        Dispur College Digital Library &bull; Ganeshguri, Guwahati - 781006, Assam
+      </div>
+    </div>
+  </div>
+</body>
+</html>`,
+          text: `Dear ${studentName},\n\nThis is an important reminder from the Dispur College Department Library.\n\nYour book return deadline is approaching.\n\nBook Details:\n\n* Book Title: ${bookTitle}\n* Book ID: ${issue.book_id}\n* Issue Date: ${formattedIssueDate}\n* Return Deadline: ${formattedDueDate}\n\nPlease submit your book to the Department Library within the next 24 hours.\n\nFailure to return the book within the permitted deadline may result in a fine according to the existing department library rules.\n\nThank you.\n\nDepartment Library\nDispur College\n`,
         };
 
         const res = await fetch('https://api.resend.com/emails', {
@@ -279,6 +320,7 @@ Deno.serve(async (req: Request) => {
               sent_at: new Date().toISOString(),
               last_error: null,
               retry_count: existing.retry_count + 1,
+              metadata: { provider: 'resend', isSandboxRestricted: false },
             })
             .eq('id', existing.id);
         } else {
@@ -287,7 +329,7 @@ Deno.serve(async (req: Request) => {
             student_id: issue.student_id,
             book_id: issue.book_id,
             due_date: issue.due_date,
-            reminder_type: 'due_soon_24h',
+            reminder_type: 'BOOK_RETURN_REMINDER',
             status: 'sent',
             recipient_email: studentEmail,
             student_name: studentName,
@@ -295,10 +337,15 @@ Deno.serve(async (req: Request) => {
             email_id: emailId,
             sent_at: new Date().toISOString(),
             retry_count: 0,
+            metadata: { provider: 'resend', isSandboxRestricted: false },
           });
         }
       } else {
         failedCount++;
+        const isSandboxRestricted =
+          Boolean(emailError?.includes('testing emails to your own email address')) ||
+          Boolean(emailError?.includes('validation_error'));
+
         results.push({
           issueId: issue.id,
           studentName,
@@ -316,6 +363,7 @@ Deno.serve(async (req: Request) => {
               status: 'failed',
               last_error: emailError,
               retry_count: existing.retry_count + 1,
+              metadata: { provider: 'resend', isSandboxRestricted },
             })
             .eq('id', existing.id);
         } else {
@@ -324,13 +372,14 @@ Deno.serve(async (req: Request) => {
             student_id: issue.student_id,
             book_id: issue.book_id,
             due_date: issue.due_date,
-            reminder_type: 'due_soon_24h',
+            reminder_type: 'BOOK_RETURN_REMINDER',
             status: 'failed',
             recipient_email: studentEmail,
             student_name: studentName,
             book_title: bookTitle,
             last_error: emailError,
             retry_count: 1,
+            metadata: { provider: 'resend', isSandboxRestricted },
           });
         }
       }
