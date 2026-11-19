@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import '@fontsource/plus-jakarta-sans/latin-400.css';
 import '@fontsource/plus-jakarta-sans/latin-500.css';
 import '@fontsource/plus-jakarta-sans/latin-600.css';
@@ -27,6 +28,7 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className="relative min-h-screen flex flex-col bg-charcoal-950 text-offwhite-100 overflow-x-hidden">
         {children}
+        <SpeedInsights />
       </body>
     </html>
   );
