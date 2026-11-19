@@ -116,6 +116,23 @@ export async function PATCH(
   if (data.page_count !== undefined) updateFields.page_count = data.page_count ?? null;
   if (data.allow_download !== undefined) updateFields.allow_download = data.allow_download;
   if (data.is_featured !== undefined) updateFields.is_featured = data.is_featured;
+  if (data.issue_duration_days !== undefined)
+    updateFields.issue_duration_days = data.issue_duration_days;
+  if (data.fine_per_day !== undefined) updateFields.fine_per_day = data.fine_per_day;
+  if (data.total_copies !== undefined) {
+    updateFields.total_copies = data.total_copies;
+    if (data.available_copies !== undefined) {
+      updateFields.available_copies = data.available_copies;
+    } else {
+      const diff = data.total_copies - (existingBook.total_copies || 1);
+      updateFields.available_copies = Math.max(
+        0,
+        (existingBook.available_copies || 0) + diff
+      );
+    }
+  } else if (data.available_copies !== undefined) {
+    updateFields.available_copies = data.available_copies;
+  }
 
   const isReplacingBookFile =
     Boolean(data.file_storage_path) && data.file_storage_path !== existingBook.file_storage_path;

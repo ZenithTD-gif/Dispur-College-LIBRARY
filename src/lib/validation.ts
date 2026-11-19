@@ -183,6 +183,10 @@ export const createBookSchema = z.object({
   file_size: z.number().int().positive(),
   allow_download: z.boolean().default(true),
   is_featured: z.boolean().default(false),
+  issue_duration_days: z.number().int().min(1, 'Issue duration must be at least 1 day').max(365).default(7),
+  fine_per_day: z.number().min(0, 'Fine per day cannot be negative').max(1000).default(5.00),
+  total_copies: z.number().int().min(1, 'Total copies must be at least 1').max(500).default(1),
+  available_copies: z.number().int().min(0).max(500).optional(),
 });
 
 export const updateBookSchema = createBookSchema.partial().extend({

@@ -36,6 +36,9 @@ async function main() {
     'students',
     'library_settings',
     'book_rentals',
+    'profiles',
+    'book_issues',
+    'fine_records',
   ];
   for (const table of tables) {
     const { count, error } = await supabase

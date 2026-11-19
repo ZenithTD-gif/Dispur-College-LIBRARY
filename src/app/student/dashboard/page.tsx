@@ -4,11 +4,14 @@ import { getCurrentStudent } from '@/lib/auth/student';
 import { isSupabaseConfigured } from '@/lib/env';
 import { getSupabaseAdminClient } from '@/lib/supabase/admin';
 import { getPublicCoverUrl } from '@/lib/supabase/storage';
-import { calculateRentalDetails } from '@/lib/validation';
+import { syncServerSideFineRecord } from '@/lib/services/fine-calculator';
 import type {
   BookRentalWithDetails,
+  BookWithCategory,
+  Category,
   LibrarySettings,
 } from '@/types/library';
+import type { RawBookRow } from '@/lib/queries/mappers';
 
 export const dynamic = 'force-dynamic';
 
@@ -52,9 +55,9 @@ export default async function StudentDashboardPage() {
         updated_by: null,
       };
 
-  // 2. Fetch student's rentals
-  const { data: rentalsData } = await adminClient
-    .from('book_rentals')
+  // 2. Fetch student's issues / rentals
+  const { data: issuesData } = await adminClient
+    .from('book_issues')
     .select(`
       *,
       book:books (
@@ -64,7 +67,11 @@ export default async function StudentDashboardPage() {
         subject,
         cover_image_path,
         file_type,
-        allow_download
+        allow_download,
+        issue_duration_days,
+        fine_per_day,
+        total_copies,
+        available_copies
       )
     `)
     .eq('student_id', student.id)
@@ -75,8 +82,20 @@ export default async function StudentDashboardPage() {
   let totalOutstandingFine = 0;
   let overdueLoanCount = 0;
 
-  for (const raw of rentalsData || []) {
-    const details = calculateRentalDetails(raw, settings.daily_fine_rate);
+  for (const raw of issuesData || []) {
+    const ratePerDay = Number(raw.fine_per_day || settings.daily_fine_rate || 5.0);
+    const syncRes = await syncServerSideFineRecord(adminClient, {
+      id: raw.id,
+      student_id: raw.student_id,
+      book_id: raw.book_id,
+      issue_date: raw.issue_date,
+      due_date: raw.due_date,
+      return_date: raw.return_date,
+      status: raw.status,
+      fine_per_day: ratePerDay,
+      fine_paid: raw.fine_paid,
+    });
+
     const bookObj = raw.book
       ? {
           ...raw.book,
@@ -86,28 +105,46 @@ export default async function StudentDashboardPage() {
 
     const rentalWithDetails: BookRentalWithDetails = {
       ...raw,
-      daily_fine_rate_snapshot: Number(raw.daily_fine_rate_snapshot),
-      fine_amount: Number(raw.fine_amount),
+      daily_fine_rate_snapshot: ratePerDay,
+      fine_amount: syncRes.fineAmount,
       book: bookObj,
-      remaining_days: details.remaining_days,
-      overdue_days: details.overdue_days,
-      calculated_fine: details.calculated_fine,
-      is_overdue: details.is_overdue,
+      remaining_days: syncRes.remainingDays,
+      overdue_days: syncRes.overdueDays,
+      calculated_fine: syncRes.fineAmount,
+      is_overdue: syncRes.isOverdue,
+      status: syncRes.status,
     };
 
-    if (raw.status === 'issued') {
+    if (syncRes.status === 'issued' || syncRes.status === 'overdue') {
       activeRentals.push(rentalWithDetails);
-      if (details.is_overdue) {
+      if (syncRes.isOverdue) {
         overdueLoanCount++;
-        totalOutstandingFine += details.calculated_fine;
+        totalOutstandingFine += syncRes.fineAmount;
       }
     } else {
       historyRentals.push(rentalWithDetails);
-      if (!raw.fine_paid && details.calculated_fine > 0) {
-        totalOutstandingFine += details.calculated_fine;
+      if (!raw.fine_paid && syncRes.fineAmount > 0) {
+        totalOutstandingFine += syncRes.fineAmount;
       }
     }
   }
+
+  // 3. Fetch categories and catalog books for the "My Issue" section
+  const [{ data: categoriesData }, { data: catalogBooksData }] = await Promise.all([
+    adminClient.from('categories').select('*').order('category_name'),
+    adminClient
+      .from('books')
+      .select('*, categories(id, category_name, slug, icon_name)')
+      .order('title'),
+  ]);
+
+  const catalogBooks: BookWithCategory[] = (
+    (catalogBooksData as RawBookRow[] | null) ?? []
+  ).map((b) => ({
+    ...b,
+    cover_url: getPublicCoverUrl(b.cover_image_path),
+    category: b.categories ?? null,
+  }));
 
   return (
     <StudentDashboardView
@@ -117,7 +154,8 @@ export default async function StudentDashboardPage() {
       initialSettings={settings}
       initialTotalFine={totalOutstandingFine}
       initialOverdueCount={overdueLoanCount}
+      initialCategories={(categoriesData as Category[]) || []}
+      initialCatalogBooks={catalogBooks}
     />
   );
 }
-

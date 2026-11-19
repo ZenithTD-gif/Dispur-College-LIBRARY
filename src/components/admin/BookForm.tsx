@@ -110,6 +110,15 @@ export function BookForm({
   const [isFeatured, setIsFeatured] = useState(
     initialBook ? initialBook.is_featured : false
   );
+  const [issueDurationDays, setIssueDurationDays] = useState(
+    initialBook?.issue_duration_days ? String(initialBook.issue_duration_days) : '7'
+  );
+  const [finePerDay, setFinePerDay] = useState(
+    initialBook?.fine_per_day !== undefined ? String(initialBook.fine_per_day) : '5.00'
+  );
+  const [totalCopies, setTotalCopies] = useState(
+    initialBook?.total_copies ? String(initialBook.total_copies) : '1'
+  );
 
   // Book document upload state
   const [uploadedBook, setUploadedBook] = useState<UploadedFileState | null>(null);
@@ -325,6 +334,18 @@ export function BookForm({
         page_count: Number.isNaN(parsedPages) ? null : parsedPages,
         allow_download: allowDownload,
         is_featured: isFeatured,
+        issue_duration_days:
+          parseInt(issueDurationDays.trim(), 10) > 0
+            ? parseInt(issueDurationDays.trim(), 10)
+            : 7,
+        fine_per_day:
+          parseFloat(finePerDay.trim()) >= 0
+            ? parseFloat(finePerDay.trim())
+            : 5.0,
+        total_copies:
+          parseInt(totalCopies.trim(), 10) > 0
+            ? parseInt(totalCopies.trim(), 10)
+            : 1,
       };
 
       if (uploadedBook) {
@@ -605,6 +626,89 @@ export function BookForm({
                   </span>
                 </div>
               </label>
+            </div>
+          </div>
+
+          {/* Book Issue & Rental Policy Settings */}
+          <div className="liquid-glass p-6 space-y-4">
+            <div className="border-b border-offwhite-100/[0.1] pb-3">
+              <h2 className="font-serif text-lg font-bold text-offwhite-50">
+                Book Issue & Rental Policy Settings
+              </h2>
+              <p className="text-xs text-offwhite-300">
+                Configure physical copy inventory, default borrowing period, and overdue fines for this title.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label
+                  htmlFor="total-copies"
+                  className="block text-xs font-semibold uppercase tracking-wider text-offwhite-200 mb-1.5"
+                >
+                  Total Copies *
+                </label>
+                <input
+                  id="total-copies"
+                  type="number"
+                  min="1"
+                  max="500"
+                  required
+                  value={totalCopies}
+                  onChange={(e) => setTotalCopies(e.target.value)}
+                  placeholder="1"
+                  className="liquid-input text-xs font-mono"
+                />
+                <span className="block mt-1 text-[11px] text-offwhite-400">
+                  Total physical copies in library
+                </span>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="issue-duration"
+                  className="block text-xs font-semibold uppercase tracking-wider text-offwhite-200 mb-1.5"
+                >
+                  Issue Duration (Days) *
+                </label>
+                <input
+                  id="issue-duration"
+                  type="number"
+                  min="1"
+                  max="365"
+                  required
+                  value={issueDurationDays}
+                  onChange={(e) => setIssueDurationDays(e.target.value)}
+                  placeholder="7"
+                  className="liquid-input text-xs font-mono"
+                />
+                <span className="block mt-1 text-[11px] text-offwhite-400">
+                  Free borrowing days (default: 7)
+                </span>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="fine-per-day"
+                  className="block text-xs font-semibold uppercase tracking-wider text-offwhite-200 mb-1.5"
+                >
+                  Fine Per Day (₹) *
+                </label>
+                <input
+                  id="fine-per-day"
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  required
+                  value={finePerDay}
+                  onChange={(e) => setFinePerDay(e.target.value)}
+                  placeholder="5.00"
+                  className="liquid-input text-xs font-mono"
+                />
+                <span className="block mt-1 text-[11px] text-offwhite-400">
+                  Late return fee per day
+                </span>
+              </div>
             </div>
           </div>
         </div>

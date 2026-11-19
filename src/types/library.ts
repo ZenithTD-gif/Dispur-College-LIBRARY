@@ -49,6 +49,10 @@ export interface Book {
   is_featured: boolean;
   view_count: number;
   download_count: number;
+  issue_duration_days?: number;
+  fine_per_day?: number;
+  total_copies?: number;
+  available_copies?: number;
   uploaded_by: string | null;
   created_at: string;
   updated_at: string;
@@ -204,6 +208,40 @@ export interface RentalOverviewStats {
   returnedRentals: number;
   totalStudents: number;
   totalOutstandingFines: number;
+}
+
+export interface BookIssue {
+  id: string;
+  student_id: string;
+  book_id: string;
+  issue_date: string;
+  due_date: string;
+  return_date: string | null;
+  status: 'issued' | 'returned' | 'overdue' | 'lost';
+  issue_duration_days: number;
+  fine_per_day: number;
+  fine_amount: number;
+  fine_paid: boolean;
+  notes: string | null;
+  issued_by: string | null;
+  returned_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FineRecord {
+  id: string;
+  issue_id: string;
+  student_id: string;
+  book_id: string;
+  days_overdue: number;
+  rate_per_day: number;
+  fine_amount: number;
+  status: 'pending' | 'paid' | 'waived';
+  calculated_at: string;
+  paid_at: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 

@@ -1,6 +1,7 @@
 -- ============================================================================
 -- Dispur College - Department of Professional Studies Digital Library
 -- Clean Supabase PostgreSQL Schema with RBAC (Admin & Student)
+-- Including Book Issuing System (book_issues, fine_records, profiles, books)
 -- ============================================================================
 
 -- ----------------------------------------------------------------------------
@@ -27,7 +28,28 @@ CREATE INDEX IF NOT EXISTS idx_users_email ON public.users(email);
 CREATE INDEX IF NOT EXISTS idx_users_is_active ON public.users(is_active);
 
 -- ----------------------------------------------------------------------------
--- 3. Administrator Profiles Table
+-- 3. Profiles Table (Unified Profile for Admins & Students)
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.profiles (
+  id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email text NOT NULL,
+  full_name text NOT NULL CHECK (char_length(trim(full_name)) >= 2),
+  role text NOT NULL DEFAULT 'student' CHECK (role IN ('admin', 'student')),
+  registration_number text,
+  college_roll_number text,
+  department text,
+  semester text,
+  phone text,
+  is_active boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_profiles_role ON public.profiles(role);
+CREATE INDEX IF NOT EXISTS idx_profiles_email ON public.profiles(email);
+
+-- ----------------------------------------------------------------------------
+-- 4. Administrator Profiles Table
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.admin_users (
   id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -44,7 +66,7 @@ CREATE INDEX IF NOT EXISTS idx_admin_users_email ON public.admin_users(email);
 CREATE INDEX IF NOT EXISTS idx_admin_users_role ON public.admin_users(role);
 
 -- ----------------------------------------------------------------------------
--- 4. Student Profiles Table (Academic Details & Identification)
+-- 5. Student Profiles Table (Academic Details & Identification)
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.students (
   id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -67,7 +89,7 @@ CREATE INDEX IF NOT EXISTS idx_students_created_at_desc ON public.students(creat
 CREATE INDEX IF NOT EXISTS idx_students_full_name_trgm ON public.students USING gin (full_name gin_trgm_ops);
 
 -- ----------------------------------------------------------------------------
--- 5. Book Categories & Classification Metadata
+-- 6. Book Categories & Classification Metadata
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.categories (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -82,7 +104,7 @@ CREATE TABLE IF NOT EXISTS public.categories (
 CREATE INDEX IF NOT EXISTS idx_categories_slug ON public.categories(slug);
 
 -- ----------------------------------------------------------------------------
--- 6. Book Uploads & Catalog
+-- 7. Books Table (Uploads, Stock & Issue Configuration)
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.books (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -106,6 +128,11 @@ CREATE TABLE IF NOT EXISTS public.books (
   is_featured boolean NOT NULL DEFAULT false,
   view_count integer NOT NULL DEFAULT 0 CHECK (view_count >= 0),
   download_count integer NOT NULL DEFAULT 0 CHECK (download_count >= 0),
+  -- Issue & inventory settings
+  issue_duration_days integer NOT NULL DEFAULT 7 CHECK (issue_duration_days > 0),
+  fine_per_day numeric(10, 2) NOT NULL DEFAULT 5.00 CHECK (fine_per_day >= 0),
+  total_copies integer NOT NULL DEFAULT 1 CHECK (total_copies >= 1),
+  available_copies integer NOT NULL DEFAULT 1 CHECK (available_copies >= 0),
   uploaded_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
@@ -130,7 +157,7 @@ CREATE INDEX IF NOT EXISTS idx_books_fts ON public.books USING gin (
 );
 
 -- ----------------------------------------------------------------------------
--- 7. Storage Assets Metadata (Book Covers & Uploaded Files)
+-- 8. Storage Assets Metadata (Book Covers & Uploaded Files)
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.storage_assets (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -148,7 +175,7 @@ CREATE TABLE IF NOT EXISTS public.storage_assets (
 CREATE INDEX IF NOT EXISTS idx_storage_assets_book_id ON public.storage_assets(book_id);
 
 -- ----------------------------------------------------------------------------
--- 8. Library Operational Settings & Policy Metadata
+-- 9. Library Operational Settings & Policy Metadata
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.library_settings (
   id integer PRIMARY KEY DEFAULT 1 CHECK (id = 1),
@@ -165,7 +192,57 @@ VALUES (1, 5.00, 7, 3, '₹')
 ON CONFLICT (id) DO NOTHING;
 
 -- ----------------------------------------------------------------------------
--- 9. Book Rentals & Borrowing Management
+-- 10. Book Issues Management (Primary Issuing Transactions)
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.book_issues (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  student_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  book_id uuid NOT NULL REFERENCES public.books(id) ON DELETE RESTRICT,
+  issue_date timestamptz NOT NULL DEFAULT now(),
+  due_date timestamptz NOT NULL,
+  return_date timestamptz,
+  status text NOT NULL DEFAULT 'issued' CHECK (status IN ('issued', 'returned', 'overdue', 'lost')),
+  issue_duration_days integer NOT NULL DEFAULT 7 CHECK (issue_duration_days > 0),
+  fine_per_day numeric(10, 2) NOT NULL DEFAULT 5.00 CHECK (fine_per_day >= 0),
+  fine_amount numeric(10, 2) NOT NULL DEFAULT 0.00 CHECK (fine_amount >= 0),
+  fine_paid boolean NOT NULL DEFAULT false,
+  notes text,
+  issued_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  returned_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_book_issues_student_id ON public.book_issues(student_id);
+CREATE INDEX IF NOT EXISTS idx_book_issues_book_id ON public.book_issues(book_id);
+CREATE INDEX IF NOT EXISTS idx_book_issues_status ON public.book_issues(status);
+CREATE INDEX IF NOT EXISTS idx_book_issues_due_date ON public.book_issues(due_date);
+CREATE INDEX IF NOT EXISTS idx_book_issues_created_at_desc ON public.book_issues(created_at DESC);
+
+-- ----------------------------------------------------------------------------
+-- 11. Fine Records (Secure Server-Calculated Fine Audit)
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.fine_records (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  issue_id uuid NOT NULL REFERENCES public.book_issues(id) ON DELETE CASCADE,
+  student_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  book_id uuid NOT NULL REFERENCES public.books(id) ON DELETE CASCADE,
+  days_overdue integer NOT NULL DEFAULT 0 CHECK (days_overdue >= 0),
+  rate_per_day numeric(10, 2) NOT NULL DEFAULT 5.00 CHECK (rate_per_day >= 0),
+  fine_amount numeric(10, 2) NOT NULL DEFAULT 0.00 CHECK (fine_amount >= 0),
+  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'waived')),
+  calculated_at timestamptz NOT NULL DEFAULT now(),
+  paid_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_fine_records_issue_id ON public.fine_records(issue_id);
+CREATE INDEX IF NOT EXISTS idx_fine_records_student_id ON public.fine_records(student_id);
+CREATE INDEX IF NOT EXISTS idx_fine_records_status ON public.fine_records(status);
+
+-- ----------------------------------------------------------------------------
+-- 12. Book Rentals (Backward Compatibility Table)
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.book_rentals (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -192,7 +269,7 @@ CREATE INDEX IF NOT EXISTS idx_book_rentals_due_date ON public.book_rentals(due_
 CREATE INDEX IF NOT EXISTS idx_book_rentals_created_at_desc ON public.book_rentals(created_at DESC);
 
 -- ----------------------------------------------------------------------------
--- 10. Audit Logging & Security Trail
+-- 13. Audit Logging & Security Trail
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.audit_logs (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -208,7 +285,7 @@ CREATE TABLE IF NOT EXISTS public.audit_logs (
 CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at_desc ON public.audit_logs(created_at DESC);
 
 -- ----------------------------------------------------------------------------
--- 11. Trigger Functions (updated_at & User Synchronization)
+-- 14. Trigger Functions (updated_at & User Synchronization)
 -- ----------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.set_updated_at()
 RETURNS trigger
@@ -223,6 +300,11 @@ $$;
 DROP TRIGGER IF EXISTS trg_users_updated_at ON public.users;
 CREATE TRIGGER trg_users_updated_at
   BEFORE UPDATE ON public.users
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+DROP TRIGGER IF EXISTS trg_profiles_updated_at ON public.profiles;
+CREATE TRIGGER trg_profiles_updated_at
+  BEFORE UPDATE ON public.profiles
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 DROP TRIGGER IF EXISTS trg_admin_users_updated_at ON public.admin_users;
@@ -250,12 +332,22 @@ CREATE TRIGGER trg_library_settings_updated_at
   BEFORE UPDATE ON public.library_settings
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
+DROP TRIGGER IF EXISTS trg_book_issues_updated_at ON public.book_issues;
+CREATE TRIGGER trg_book_issues_updated_at
+  BEFORE UPDATE ON public.book_issues
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+DROP TRIGGER IF EXISTS trg_fine_records_updated_at ON public.fine_records;
+CREATE TRIGGER trg_fine_records_updated_at
+  BEFORE UPDATE ON public.fine_records
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
 DROP TRIGGER IF EXISTS trg_book_rentals_updated_at ON public.book_rentals;
 CREATE TRIGGER trg_book_rentals_updated_at
   BEFORE UPDATE ON public.book_rentals
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
--- Auto-synchronize role tables into unified public.users
+-- Auto-synchronize role tables into unified public.users and public.profiles
 CREATE OR REPLACE FUNCTION public.sync_admin_to_users()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -270,6 +362,16 @@ BEGIN
       role = 'admin',
       is_active = EXCLUDED.is_active,
       updated_at = now();
+
+  INSERT INTO public.profiles (id, email, full_name, role, is_active, created_at, updated_at)
+  VALUES (NEW.id, NEW.email, NEW.name, 'admin', NEW.is_active, NEW.created_at, NEW.updated_at)
+  ON CONFLICT (id) DO UPDATE
+  SET email = EXCLUDED.email,
+      full_name = EXCLUDED.full_name,
+      role = 'admin',
+      is_active = EXCLUDED.is_active,
+      updated_at = now();
+
   RETURN NEW;
 END;
 $$;
@@ -293,6 +395,27 @@ BEGIN
       role = 'student',
       is_active = EXCLUDED.is_active,
       updated_at = now();
+
+  INSERT INTO public.profiles (
+    id, email, full_name, role, registration_number, college_roll_number,
+    department, semester, phone, is_active, created_at, updated_at
+  )
+  VALUES (
+    NEW.id, NEW.email, NEW.full_name, 'student', NEW.registration_number, NEW.college_roll_number,
+    NEW.department, NEW.semester, NEW.phone, NEW.is_active, NEW.created_at, NEW.updated_at
+  )
+  ON CONFLICT (id) DO UPDATE
+  SET email = EXCLUDED.email,
+      full_name = EXCLUDED.full_name,
+      role = 'student',
+      registration_number = EXCLUDED.registration_number,
+      college_roll_number = EXCLUDED.college_roll_number,
+      department = EXCLUDED.department,
+      semester = EXCLUDED.semester,
+      phone = EXCLUDED.phone,
+      is_active = EXCLUDED.is_active,
+      updated_at = now();
+
   RETURN NEW;
 END;
 $$;
@@ -302,7 +425,7 @@ CREATE TRIGGER trg_sync_student_to_users
   AFTER INSERT OR UPDATE ON public.students
   FOR EACH ROW EXECUTE FUNCTION public.sync_student_to_users();
 
--- Populate existing rows into public.users if not present
+-- Populate existing rows
 INSERT INTO public.users (id, email, full_name, role, is_active, created_at, updated_at)
 SELECT id, email, name, 'admin', is_active, created_at, updated_at
 FROM public.admin_users
@@ -321,8 +444,23 @@ SET email = EXCLUDED.email,
     role = 'student',
     is_active = EXCLUDED.is_active;
 
+INSERT INTO public.profiles (
+  id, email, full_name, role, registration_number, college_roll_number,
+  department, semester, phone, is_active, created_at, updated_at
+)
+SELECT
+  s.id, s.email, s.full_name, 'student', s.registration_number, s.college_roll_number,
+  s.department, s.semester, s.phone, s.is_active, s.created_at, s.updated_at
+FROM public.students s
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.profiles (id, email, full_name, role, is_active, created_at, updated_at)
+SELECT a.id, a.email, a.name, 'admin', a.is_active, a.created_at, a.updated_at
+FROM public.admin_users a
+ON CONFLICT (id) DO NOTHING;
+
 -- ----------------------------------------------------------------------------
--- 12. Security Helper Functions
+-- 15. Security Helper Functions
 -- ----------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.is_active_admin()
 RETURNS boolean
@@ -339,6 +477,12 @@ AS $$
   ) OR EXISTS (
     SELECT 1
     FROM public.users
+    WHERE id = auth.uid()
+      AND role = 'admin'
+      AND is_active = true
+  ) OR EXISTS (
+    SELECT 1
+    FROM public.profiles
     WHERE id = auth.uid()
       AND role = 'admin'
       AND is_active = true
@@ -363,6 +507,12 @@ AS $$
   ) OR EXISTS (
     SELECT 1
     FROM public.users
+    WHERE id = auth.uid()
+      AND role = 'student'
+      AND is_active = true
+  ) OR EXISTS (
+    SELECT 1
+    FROM public.profiles
     WHERE id = auth.uid()
       AND role = 'student'
       AND is_active = true
@@ -408,6 +558,72 @@ $$;
 REVOKE ALL ON FUNCTION public.get_current_user_role() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.get_current_user_role() TO authenticated, service_role;
 
+-- Server-side authoritative fine calculation function
+CREATE OR REPLACE FUNCTION public.calculate_issue_fine(p_issue_id uuid)
+RETURNS numeric(10, 2)
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_issue RECORD;
+  v_overdue_days integer := 0;
+  v_calculated_fine numeric(10, 2) := 0.00;
+  v_compare_date timestamptz;
+  v_fine_id uuid;
+BEGIN
+  SELECT * INTO v_issue FROM public.book_issues WHERE id = p_issue_id;
+  IF NOT FOUND THEN
+    RETURN 0.00;
+  END IF;
+
+  v_compare_date := COALESCE(v_issue.return_date, now());
+
+  IF v_compare_date > v_issue.due_date THEN
+    v_overdue_days := GREATEST(0, CEIL(EXTRACT(EPOCH FROM (v_compare_date - v_issue.due_date)) / 86400)::integer);
+    v_calculated_fine := ROUND((v_overdue_days * v_issue.fine_per_day)::numeric, 2);
+  ELSE
+    v_overdue_days := 0;
+    v_calculated_fine := 0.00;
+  END IF;
+
+  UPDATE public.book_issues
+  SET fine_amount = v_calculated_fine,
+      status = CASE
+        WHEN v_issue.status = 'returned' THEN 'returned'
+        WHEN v_overdue_days > 0 THEN 'overdue'
+        ELSE 'issued'
+      END,
+      updated_at = now()
+  WHERE id = p_issue_id;
+
+  IF v_calculated_fine > 0 THEN
+    SELECT id INTO v_fine_id FROM public.fine_records WHERE issue_id = p_issue_id LIMIT 1;
+    IF v_fine_id IS NOT NULL THEN
+      UPDATE public.fine_records
+      SET days_overdue = v_overdue_days,
+          rate_per_day = v_issue.fine_per_day,
+          fine_amount = v_calculated_fine,
+          status = CASE WHEN v_issue.fine_paid THEN 'paid' ELSE 'pending' END,
+          updated_at = now()
+      WHERE id = v_fine_id;
+    ELSE
+      INSERT INTO public.fine_records (
+        issue_id, student_id, book_id, days_overdue, rate_per_day, fine_amount, status, calculated_at
+      )
+      VALUES (
+        v_issue.id, v_issue.student_id, v_issue.book_id, v_overdue_days, v_issue.fine_per_day, v_calculated_fine,
+        CASE WHEN v_issue.fine_paid THEN 'paid' ELSE 'pending' END, now()
+      );
+    END IF;
+  END IF;
+
+  RETURN v_calculated_fine;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.calculate_issue_fine(uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.calculate_issue_fine(uuid) TO authenticated, service_role;
+
 CREATE OR REPLACE FUNCTION public.increment_book_metric(p_book_id uuid, p_metric text)
 RETURNS void
 LANGUAGE plpgsql
@@ -430,15 +646,18 @@ $$;
 GRANT EXECUTE ON FUNCTION public.increment_book_metric(uuid, text) TO anon, authenticated, service_role;
 
 -- ----------------------------------------------------------------------------
--- 13. Row Level Security (RLS) Policies
+-- 16. Row Level Security (RLS) Policies
 -- ----------------------------------------------------------------------------
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.admin_users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.students ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.books ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.storage_assets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.library_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.book_issues ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.fine_records ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.book_rentals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 
@@ -458,6 +677,27 @@ CREATE POLICY "Admins can view all users"
 DROP POLICY IF EXISTS "Admins can manage users" ON public.users;
 CREATE POLICY "Admins can manage users"
   ON public.users FOR ALL
+  TO authenticated
+  USING (public.is_active_admin())
+  WITH CHECK (public.is_active_admin());
+
+-- Policies: profiles
+DROP POLICY IF EXISTS "Users can read own profile" ON public.profiles;
+CREATE POLICY "Users can read own profile"
+  ON public.profiles FOR SELECT
+  TO authenticated
+  USING (id = auth.uid());
+
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
+CREATE POLICY "Users can update own profile"
+  ON public.profiles FOR UPDATE
+  TO authenticated
+  USING (id = auth.uid())
+  WITH CHECK (id = auth.uid());
+
+DROP POLICY IF EXISTS "Admins can manage all profiles" ON public.profiles;
+CREATE POLICY "Admins can manage all profiles"
+  ON public.profiles FOR ALL
   TO authenticated
   USING (public.is_active_admin())
   WITH CHECK (public.is_active_admin());
@@ -553,6 +793,40 @@ CREATE POLICY "Admins can update library settings"
   USING (public.is_active_admin())
   WITH CHECK (public.is_active_admin());
 
+-- Policies: book_issues
+DROP POLICY IF EXISTS "Students can view own issues" ON public.book_issues;
+CREATE POLICY "Students can view own issues"
+  ON public.book_issues FOR SELECT
+  TO authenticated
+  USING (student_id = auth.uid());
+
+DROP POLICY IF EXISTS "Students can insert own issues" ON public.book_issues;
+CREATE POLICY "Students can insert own issues"
+  ON public.book_issues FOR INSERT
+  TO authenticated
+  WITH CHECK (student_id = auth.uid() AND public.is_active_student());
+
+DROP POLICY IF EXISTS "Admins can manage all book issues" ON public.book_issues;
+CREATE POLICY "Admins can manage all book issues"
+  ON public.book_issues FOR ALL
+  TO authenticated
+  USING (public.is_active_admin())
+  WITH CHECK (public.is_active_admin());
+
+-- Policies: fine_records
+DROP POLICY IF EXISTS "Students can view own fine records" ON public.fine_records;
+CREATE POLICY "Students can view own fine records"
+  ON public.fine_records FOR SELECT
+  TO authenticated
+  USING (student_id = auth.uid());
+
+DROP POLICY IF EXISTS "Admins can manage all fine records" ON public.fine_records;
+CREATE POLICY "Admins can manage all fine records"
+  ON public.fine_records FOR ALL
+  TO authenticated
+  USING (public.is_active_admin())
+  WITH CHECK (public.is_active_admin());
+
 -- Policies: book_rentals
 DROP POLICY IF EXISTS "Students can view their own rentals" ON public.book_rentals;
 CREATE POLICY "Students can view their own rentals"
@@ -581,7 +855,7 @@ CREATE POLICY "Admins can insert audit logs"
   WITH CHECK (public.is_active_admin());
 
 -- ----------------------------------------------------------------------------
--- 14. Cloud Storage Buckets & Policies
+-- 17. Cloud Storage Buckets & Policies
 -- ----------------------------------------------------------------------------
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES (

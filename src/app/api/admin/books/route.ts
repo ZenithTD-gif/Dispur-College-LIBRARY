@@ -99,6 +99,10 @@ export async function POST(request: NextRequest) {
     file_size: data.file_size,
     allow_download: data.allow_download,
     is_featured: data.is_featured,
+    issue_duration_days: data.issue_duration_days ?? 7,
+    fine_per_day: data.fine_per_day ?? 5.0,
+    total_copies: data.total_copies ?? 1,
+    available_copies: data.available_copies ?? data.total_copies ?? 1,
     uploaded_by: auth.admin.id,
   };
 

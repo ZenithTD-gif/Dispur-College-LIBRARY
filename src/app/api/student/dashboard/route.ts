@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireStudentApi } from '@/lib/auth/student';
 import { getSupabaseAdminClient } from '@/lib/supabase/admin';
 import { getPublicCoverUrl } from '@/lib/supabase/storage';
-import { calculateRentalDetails } from '@/lib/validation';
+import { syncServerSideFineRecord } from '@/lib/services/fine-calculator';
 import type { BookRentalWithDetails, LibrarySettings } from '@/types/library';
 
 export const dynamic = 'force-dynamic';
@@ -43,9 +43,9 @@ export async function GET() {
         updated_by: null,
       };
 
-  // 2. Fetch student's rentals with book details
-  const { data: rentalsData, error: rentalsError } = await adminClient
-    .from('book_rentals')
+  // 2. Fetch student's issues / rentals with book details
+  const { data: rawIssues, error: issuesError } = await adminClient
+    .from('book_issues')
     .select(`
       *,
       book:books (
@@ -55,27 +55,44 @@ export async function GET() {
         subject,
         cover_image_path,
         file_type,
-        allow_download
+        allow_download,
+        issue_duration_days,
+        fine_per_day,
+        total_copies,
+        available_copies
       )
     `)
     .eq('student_id', student.id)
     .order('created_at', { ascending: false });
 
-  if (rentalsError) {
-    console.error('Failed to query student rentals:', rentalsError);
+  if (issuesError) {
+    console.error('Failed to query student issues:', issuesError);
     return NextResponse.json(
       { error: 'Failed to retrieve borrowing records.' },
       { status: 500 }
     );
   }
 
+  // 3. Re-calculate fines authoritatively on the server side
   const activeRentals: BookRentalWithDetails[] = [];
   const historyRentals: BookRentalWithDetails[] = [];
   let totalOutstandingFine = 0;
   let overdueLoanCount = 0;
 
-  for (const raw of rentalsData || []) {
-    const details = calculateRentalDetails(raw, settings.daily_fine_rate);
+  for (const raw of rawIssues || []) {
+    const ratePerDay = Number(raw.fine_per_day || settings.daily_fine_rate || 5.0);
+    const syncRes = await syncServerSideFineRecord(adminClient, {
+      id: raw.id,
+      student_id: raw.student_id,
+      book_id: raw.book_id,
+      issue_date: raw.issue_date,
+      due_date: raw.due_date,
+      return_date: raw.return_date,
+      status: raw.status,
+      fine_per_day: ratePerDay,
+      fine_paid: raw.fine_paid,
+    });
+
     const bookObj = raw.book
       ? {
           ...raw.book,
@@ -85,28 +102,44 @@ export async function GET() {
 
     const rentalWithDetails: BookRentalWithDetails = {
       ...raw,
-      daily_fine_rate_snapshot: Number(raw.daily_fine_rate_snapshot),
-      fine_amount: Number(raw.fine_amount),
+      daily_fine_rate_snapshot: ratePerDay,
+      fine_amount: syncRes.fineAmount,
       book: bookObj,
-      remaining_days: details.remaining_days,
-      overdue_days: details.overdue_days,
-      calculated_fine: details.calculated_fine,
-      is_overdue: details.is_overdue,
+      remaining_days: syncRes.remainingDays,
+      overdue_days: syncRes.overdueDays,
+      calculated_fine: syncRes.fineAmount,
+      is_overdue: syncRes.isOverdue,
+      status: syncRes.status,
     };
 
-    if (raw.status === 'issued') {
+    if (syncRes.status === 'issued' || syncRes.status === 'overdue') {
       activeRentals.push(rentalWithDetails);
-      if (details.is_overdue) {
+      if (syncRes.isOverdue) {
         overdueLoanCount++;
-        totalOutstandingFine += details.calculated_fine;
+        totalOutstandingFine += syncRes.fineAmount;
       }
     } else {
       historyRentals.push(rentalWithDetails);
-      if (!raw.fine_paid && details.calculated_fine > 0) {
-        totalOutstandingFine += details.calculated_fine;
+      if (!raw.fine_paid && syncRes.fineAmount > 0) {
+        totalOutstandingFine += syncRes.fineAmount;
       }
     }
   }
+
+  // 4. Fetch categories and catalog books for browsing
+  const [{ data: categories }, { data: catalogBooks }] = await Promise.all([
+    adminClient.from('categories').select('*').order('category_name'),
+    adminClient
+      .from('books')
+      .select('*, categories(id, category_name, slug, icon_name)')
+      .order('title'),
+  ]);
+
+  const mappedCatalogBooks = (catalogBooks || []).map((b) => ({
+    ...b,
+    cover_url: getPublicCoverUrl(b.cover_image_path),
+    category: b.categories ?? null,
+  }));
 
   return NextResponse.json({
     student,
@@ -116,6 +149,7 @@ export async function GET() {
     activeLoanCount: activeRentals.length,
     overdueLoanCount,
     settings,
+    categories: categories || [],
+    catalogBooks: mappedCatalogBooks,
   });
 }
-
